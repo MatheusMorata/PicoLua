@@ -4,11 +4,13 @@ local SDL  = require("SDL")
 local TTF  = require("SDL.ttf")
 local MIXER  = require("SDL.mixer")
 
-
+function pico.limparTela()
+    renderizador:setDrawColor()
+end
 
 function pico.iniciar(on)
     if on then
-        SDL.init{ SDL.flags.Video }
+        assert(SDL.init{ SDL.flags.Video })
 
         janela = SDL.createWindow{
             title  = "Pico Lua",
@@ -16,14 +18,22 @@ function pico.iniciar(on)
             height = 600,
             x      = SDL.window.centralized,
             y      = SDL.window.centralized,
-            flags  = { SDL.window.Shown }
+            flags  = { SDL.window.Shown, SDL.window.Resizable }
         }
 
+        assert(janela)
+
         renderizador = SDL.createRenderer(janela, -1, SDL.rendererFlags.Accelerated)
-        
+        renderizador:setDrawBlendMode(SDL.blendMode.Blend)
+
+        assert(renderizador)
+
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
 
+        --limparTela()
+        SDL.pumpEvents()
+        SDL.flushEvents(SDL.event.First, SDL.event.Last)
     else
         if pico.font and pico.font.ttf then
             pico.font.ttf:close()
