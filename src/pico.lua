@@ -5,7 +5,26 @@ local TTF  = require("SDL.ttf")
 local MIXER  = require("SDL.mixer")
 
 function pico.limparTela()
-    renderizador:setDrawColor()
+    renderizador:setDrawColor({
+        r = 0,
+        g = 0,
+        b = 0,
+        a = 255
+    })
+
+    --if _noclip() then
+        renderizador:clear()
+    --else
+        local r = renderizador:getClipRect()
+        renderizador:fillRect(r)
+    --end
+
+    --renderizador:setDrawColor({
+    --    r = 255,
+    --    g = 255,
+    --    b = 255,
+    --    a = 255
+    --})
 end
 
 function pico.iniciar(on)
@@ -31,7 +50,7 @@ function pico.iniciar(on)
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
 
-        --limparTela()
+        pico.limparTela()
         SDL.pumpEvents()
         SDL.flushEvents(SDL.event.First, SDL.event.Last)
     else
