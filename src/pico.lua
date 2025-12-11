@@ -42,6 +42,11 @@ function pico.noclip()
            (S.clip[4] == PICO_CLIP_RESET[4])
 end
 
+
+--function pico.set_zoom(){}
+--function pico.set_font(){}
+
+
 function pico.output_clear()
     
     renderer:setDrawColor({
@@ -95,6 +100,8 @@ function pico.init(on)
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
 
+        --pico.set_zoom();
+        --pico.set_font();
         pico.output_clear()
         SDL.pumpEvents()
         SDL.flushEvents(SDL.event.First, SDL.event.Last)
