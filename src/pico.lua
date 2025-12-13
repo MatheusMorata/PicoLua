@@ -1,10 +1,11 @@
 local pico = {}
 
-local SDL  = require("SDL")
-local TTF  = require("SDL.ttf")
-local MIXER  = require("SDL.mixer")
+local SDL   = require("SDL")
+local TTF   = require("SDL.ttf")
+local MIXER = require("SDL.mixer")
 
 local PICO_CLIP_RESET = {0, 0, 0, 0}
+local DEFAULT_FONT = "tiny.ttf"
 
 local S = {
     anchor = {
@@ -20,7 +21,7 @@ local S = {
     crop = {0, 0, 0, 0},
     cursor = {
         x = 0,
-        cur = {0,0}
+        cur = {0, 0}
     },
     dim = {
         window = PICO_DIM_WINDOW,
@@ -28,13 +29,13 @@ local S = {
     },
     expert = 0,
     flip = {0, 0},
-    font = {ttf = nil, h = 0},
+    font = { ttf = nil, h = 0 },
     fullscreen = 0,
     grid = 1,
     scroll = {0, 0},
     style = PICO_FILL,
     scale = {100, 100},
-    zoom = {100, 100},
+    zoom  = {100, 100},
 }
 
 function pico.noclip()
@@ -42,72 +43,83 @@ function pico.noclip()
            (S.clip[4] == PICO_CLIP_RESET[4])
 end
 
+function pico.set_font(file, h)
+    if not h or h == 0 then
+        local wy =
+            (S.dim.world  and S.dim.world.y)  or
+            (S.dim.window and S.dim.window.y) or
+            600
+        h = math.max(8, math.floor(wy / 10))
+    end
 
---function pico.set_zoom(){}
---function pico.set_font(){}
+    S.font.h = h
 
+    if S.font.ttf then
+        S.font.ttf:close()
+        S.font.ttf = nil
+    end
+
+    local font_file = file or DEFAULT_FONT
+    local font, err = TTF.open(font_file, S.font.h)
+    assert(font, err)
+
+    S.font.ttf = font
+end
 
 function pico.output_clear()
-    
-    renderer:setDrawColor({
+    renderer:setDrawColor{
         r = S.color.clear[1],
         g = S.color.clear[2],
         b = S.color.clear[3],
         a = S.color.clear[4]
-    })
+    }
 
     if pico.noclip() then
         renderer:clear()
     else
-        local r = SDL.Rect({
-            w = 0,
-            h = 0,
-            x = 0,
-            y = 0
-        })
+        local r = SDL.Rect{ x = 0, y = 0, w = 0, h = 0 }
         renderer:getClipRect(r)
         renderer:fillRect(r)
     end
 
-    renderer:setDrawColor({
+    renderer:setDrawColor{
         r = S.color.draw[1],
         g = S.color.draw[2],
         b = S.color.draw[3],
         a = S.color.draw[4]
-    })
+    }
 end
 
 function pico.init(on)
     if on then
-        assert(SDL.init{ SDL.flags.Video })
+        assert(SDL.init { SDL.flags.Video })
 
-        window = SDL.createWindow{
+        window = assert(SDL.createWindow {
             title  = "Pico Lua",
             width  = 800,
             height = 600,
             x      = SDL.window.centralized,
             y      = SDL.window.centralized,
             flags  = { SDL.window.Shown, SDL.window.Resizable }
-        }
+        })
 
-        assert(window)
-
-        renderer = SDL.createRenderer(window, -1, SDL.rendererFlags.Accelerated)
+        renderer = assert(SDL.createRenderer(
+            window, -1, SDL.rendererFlags.Accelerated
+        ))
         renderer:setDrawBlendMode(SDL.blendMode.Blend)
-
-        assert(renderer)
 
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
 
-        --pico.set_zoom();
-        --pico.set_font();
+        pico.set_font(nil, 0)
         pico.output_clear()
+
         SDL.pumpEvents()
         SDL.flushEvents(SDL.event.First, SDL.event.Last)
     else
         if S.font.ttf then
-            S.font.ttf:close()
+            TTF.CloseFont(S.font.ttf)
+            S.font.ttf = nil
         end
 
         MIXER.closeAudio()
@@ -115,6 +127,7 @@ function pico.init(on)
 
         if renderer then renderer:destroy() end
         if window then window:destroy() end
+
         SDL.quit()
     end
 end
