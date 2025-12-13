@@ -116,7 +116,7 @@ end
 
 
 function pico.set_zoom(pct)
-    -- INCOMPLETA
+    -- FUNÇÃO INCOMPLETA
     
     local old = pico._zoom()
 
