@@ -9,33 +9,46 @@ local DEFAULT_FONT = "tiny.ttf"
 
 local S = {
     anchor = {
-        pos = {PICO_CENTER, PICO_MIDDLE},
-        rotate = {PICO_CENTER, PICO_MIDDLE}
+        pos = { x = PICO_CENTER or 0, y = PICO_MIDDLE or 0 },
+        rotate = { x = PICO_CENTER or 0, y = PICO_MIDDLE or 0 }
     },
+
     angle = 0,
-    clip = {0, 0, 0, 0},
+
+    clip = { x = 0, y = 0, w = 0, h = 0 },
+
     color = {
-        clear = {0, 0, 0, 255},
-        draw  = {255, 255, 255, 255}
+        clear = { r = 0, g = 0, b = 0, a = 255 },
+        draw  = { r = 255, g = 255, b = 255, a = 255 }
     },
-    crop = {0, 0, 0, 0},
+
+    crop = { x = 0, y = 0, w = 0, h = 0 },
+
     cursor = {
         x = 0,
-        cur = {0, 0}
+        cur = { x = 0, y = 0 }
     },
+
     dim = {
-        window = PICO_DIM_WINDOW,
-        world  = PICO_DIM_WORLD
+        window = { x = 0, y = 0 },
+        world  = { x = 0, y = 0 }
     },
+
     expert = 0,
-    flip = {0, 0},
+
+    flip = { x = 0, y = 0 },
+
     font = { ttf = nil, h = 0 },
+
     fullscreen = 0,
     grid = 1,
-    scroll = {0, 0},
-    style = PICO_FILL,
-    scale = {100, 100},
-    zoom  = {100, 100},
+
+    scroll = { x = 0, y = 0 },
+
+    style = PICO_FILL or 0,
+
+    scale = { x = 100, y = 100 },
+    zoom  = { x = 100, y = 100 }
 }
 
 function pico.noclip()
@@ -77,7 +90,7 @@ function pico.output_clear()
     if pico.noclip() then
         renderer:clear()
     else
-        local r = SDL.Rect{ x = 0, y = 0, w = 0, h = 0 }
+        local r = { x = 0, y = 0, w = 0, h = 0 }
         renderer:getClipRect(r)
         renderer:fillRect(r)
     end
