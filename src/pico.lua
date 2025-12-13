@@ -103,6 +103,61 @@ function pico.output_clear()
     }
 end
 
+function pico._zoom()
+    return {
+        x = S.dim.world.x * S.zoom.x / 100,
+        y = S.dim.world.y * S.zoom.y / 100
+    }
+end
+
+function pico.set_scroll(pos)
+    S.scroll = pos;
+end
+
+
+function pico.set_zoom(pct)
+    -- INCOMPLETA
+    
+    local old = pico._zoom()
+
+    S.zoom.x = pct.x
+    S.zoom.y = pct.y
+
+    local new = pico._zoom()
+
+    local dx = new.x - old.x
+    local dy = new.y - old.y
+
+    pico.set_scroll{
+        x = S.scroll.x - (dx * S.anchor.pos.x / 100),
+        y = S.scroll.y - (dy * S.anchor.pos.y / 100)
+    }
+
+    if TEX then
+        TEX:destroy()
+        TEX = nil
+    end
+
+    TEX = assert(
+        renderer:createTexture(
+            SDL.pixelFormat.RGBA32,
+            SDL.textureAccess.Target,
+            new.x,
+            new.y
+        )
+    )
+
+    renderer:setLogicalSize(new.x, new.y)
+    renderer:setTarget(TEX)
+
+    renderer:setClipRect{
+        x = 0,
+        y = 0,
+        w = new.x,
+        h = new.y
+    }
+end
+
 function pico.init(on)
     if on then
         assert(SDL.init { SDL.flags.Video })
@@ -124,6 +179,7 @@ function pico.init(on)
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
 
+        --pico.set_zoom(S.zoom)
         pico.set_font(nil, 0)
         pico.output_clear()
 
