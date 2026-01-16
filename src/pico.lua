@@ -187,7 +187,7 @@ function pico.init(on)
         SDL.flushEvents(SDL.event.First, SDL.event.Last)
     else
         if S.font.ttf then
-            TTF.CloseFont(S.font.ttf)
+            S.font.ttf:close()
             S.font.ttf = nil
         end
 
