@@ -4,6 +4,8 @@ local SDL   = require "SDL"
 local TTF   = require "SDL.ttf" 
 local MIXER = require "SDL.mixer"
 
+local VAR = dofile("../src/variaveis.lua")
+
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
@@ -131,11 +133,11 @@ end
 function pico.init(on)
     if on then
         assert(SDL.init { SDL.flags.Video })
-
+        print(SDL.window.undefined)
         window = assert(SDL.createWindow {
-            title  = "teste",
-            width  = 800,
-            height = 600,
+            title  = VAR.title,
+            width  = SDL.window.undefined,
+            height = SDL.window.undefined,
             x      = SDL.window.centralized,
             y      = SDL.window.centralized,
             flags  = { SDL.window.Shown, SDL.window.Resizable }
