@@ -1,53 +1,28 @@
 local pico = {}
 
-local SDL   = require("SDL")
-local TTF   = require("SDL.ttf")
-local MIXER = require("SDL.mixer")
+local SDL   = require "SDL"
+local TTF   = require "SDL.ttf" 
+local MIXER = require "SDL.mixer"
 
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
 local S = {
-    anchor = {
-        pos = { x = PICO_CENTER or 0, y = PICO_MIDDLE or 0 },
-        rotate = { x = PICO_CENTER or 0, y = PICO_MIDDLE or 0 }
-    },
-
-    angle = 0,
-
     clip = { x = 0, y = 0, w = 0, h = 0 },
-
+    
     color = {
         clear = { r = 0, g = 0, b = 0, a = 255 },
         draw  = { r = 255, g = 255, b = 255, a = 255 }
     },
-
-    crop = { x = 0, y = 0, w = 0, h = 0 },
-
-    cursor = {
-        x = 0,
-        cur = { x = 0, y = 0 }
-    },
-
+    
     dim = {
-        window = { x = 0, y = 0 },
         world  = { x = 0, y = 0 }
     },
-
-    expert = 0,
-
-    flip = { x = 0, y = 0 },
-
+    
     font = { ttf = nil, h = 0 },
-
-    fullscreen = 0,
-    grid = 1,
-
+    
     scroll = { x = 0, y = 0 },
-
-    style = PICO_FILL or 0,
-
-    scale = { x = 100, y = 100 },
+    
     zoom  = { x = 100, y = 100 }
 }
 
@@ -114,7 +89,6 @@ function pico.set_scroll(pos)
     S.scroll = pos;
 end
 
-
 function pico.set_zoom(pct)
     -- FUNÇÃO INCOMPLETA
     
@@ -127,11 +101,6 @@ function pico.set_zoom(pct)
 
     local dx = new.x - old.x
     local dy = new.y - old.y
-
-    pico.set_scroll{
-        x = S.scroll.x - (dx * S.anchor.pos.x / 100),
-        y = S.scroll.y - (dy * S.anchor.pos.y / 100)
-    }
 
     if TEX then
         TEX:destroy()
