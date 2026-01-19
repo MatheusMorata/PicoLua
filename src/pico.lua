@@ -7,6 +7,7 @@ local MIXER = require "SDL.mixer"
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
+
 local S = {
     clip = { x = 0, y = 0, w = 0, h = 0 },
     
@@ -132,7 +133,7 @@ function pico.init(on)
         assert(SDL.init { SDL.flags.Video })
 
         window = assert(SDL.createWindow {
-            title  = "Pico Lua",
+            title  = "teste",
             width  = 800,
             height = 600,
             x      = SDL.window.centralized,
