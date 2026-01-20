@@ -119,6 +119,7 @@ function pico.init(on)
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
 
+        --pico.set_size(CONFIG.PICO_DIM_PHY(), CONFIG.PICO_DIM_LOG())
         pico.set_font(nil, 0)
         pico.output_clear()
 
