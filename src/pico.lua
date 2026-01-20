@@ -18,6 +18,11 @@ local S = {
         draw  = { r = 255, g = 255, b = 255, a = 255 }
     },
     
+    view = {
+        phy = CONFIG.PICO_DIM_PHY(),
+        log = CONFIG.PICO_DIM_LOG()
+    },
+
     dim = {
         world  = { x = 0, y = 0 }
     },
@@ -136,11 +141,11 @@ function pico.init(on)
 
         window = assert(SDL.createWindow {
             title  = CONFIG.title,
-            width  = SDL.window.undefined,
-            height = SDL.window.undefined,
-            x      = SDL.window.centralized,
-            y      = SDL.window.centralized,
-            flags  = { SDL.window.Shown, SDL.window.Resizable }
+            width  = CONFIG.undefined,
+            height = CONFIG.undefined,
+            x      = S.view.phy.w,
+            y      = S.view.phy.h,
+            flags  = { SDL.window.Shown }
         })
 
         renderer = assert(SDL.createRenderer(
