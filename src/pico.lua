@@ -122,8 +122,6 @@ function pico.init(on)
         pico.set_font(nil, 0)
         pico.output_clear()
 
-        SDL.pumpEvents()
-        SDL.flushEvents(SDL.event.First, SDL.event.Last)
     else
         if S.font.ttf then
             S.font.ttf:close()
