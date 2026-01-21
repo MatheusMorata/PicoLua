@@ -140,6 +140,11 @@ function pico.output_clear()
     pico._output_present(0)
 end
 
+function pico.set_grid(on)
+    S.grid = 0
+    pico._output_present(0)
+end
+
 function pico._set_size(phy, log)
     -- Physical
     if phy.x == CONFIG.PICO_SIZE_KEEP.x and phy.y == CONFIG.PICO_SIZE_KEEP.y then 
@@ -160,7 +165,7 @@ function pico._set_size(phy, log)
     end
 
     if PHY.x == S.size.cur.x || PHY.y == S.size.cur.y then
-        --pico.set_grid(0)
+        pico.set_grid(0)
     end
 
     pico._output_present(0)
