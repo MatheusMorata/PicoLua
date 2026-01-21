@@ -164,7 +164,7 @@ function pico._set_size(phy, log)
         renderer:setLogicalSize(S.size.cur.x, S.size.cur.y)
     end
 
-    if PHY.x == S.size.cur.x || PHY.y == S.size.cur.y then
+    if PHY.x == S.size.cur.x or PHY.y == S.size.cur.y then
         pico.set_grid(0)
     end
 
