@@ -19,6 +19,10 @@ local CONFIG = {
     PICO_DIM_LOG = function()
         return CONFIG.Pico_Dim.new(100, 100)
     end,
+
+    PICO_SIZE_KEEP = function()
+        return CONFIG.Pico_Dim.new(0, 0)
+    end
 }
 
 return CONFIG
