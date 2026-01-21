@@ -163,6 +163,7 @@ function pico._set_size(phy, log)
        -- keep 
     else
         S.size.cur = log
+        renderer:destroyTexture(TEX)
         TEX = renderer:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, S.size.cur.x, S.size.cur.y)
         renderer:setLogicalSize(S.size.cur.x, S.size.cur.y)
     end
