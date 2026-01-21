@@ -20,8 +20,8 @@ local S = {
     expert = 0,
 
     view = {
-        phy = CONFIG.PICO_DIM_PHY(),
-        log = CONFIG.PICO_DIM_LOG()
+        phy = CONFIG.Pico_Dim.new(500, 500),
+        log = CONFIG.Pico_Dim.new(100, 100)
     },
 
     dim = {
@@ -85,7 +85,7 @@ function pico._output_clear()
     })
 end
 
-function picos.show_grid()
+function pico.show_grid()
     if not S.grid then
         return
     end
@@ -124,7 +124,7 @@ function pico._output_present(force)
     })
     renderer:clear()
     renderer:copy(TEX)
-    -- show_grid()
+    show_grid()
     renderer:present()
     renderer:setDrawColor({
         r = S.color.draw[1],

@@ -10,19 +10,7 @@ local CONFIG = {
                 h = h or 0
             }
         end
-    },
-
-    PICO_DIM_PHY = function()
-        return CONFIG.Pico_Dim.new(500, 500)
-    end,
-
-    PICO_DIM_LOG = function()
-        return CONFIG.Pico_Dim.new(100, 100)
-    end,
-
-    PHY = function()
-        return CONFIG.Pico_Dim.new(0, 0)
-    end,
+    }
 }
 
 return CONFIG
