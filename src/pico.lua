@@ -8,6 +8,11 @@ local CONFIG = dofile("../src/config.lua")
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
+local function PHY(window)
+    local x, y = window:getSize()
+    return {x = x, y = y}
+end
+
 local S = {
     color = {
         clear = { 0, 0, 0, 255 },
@@ -136,6 +141,27 @@ function pico.output_clear()
 end
 
 function pico._set_size(phy, log)
+    -- Physical
+    if phy.x == CONFIG.PICO_SIZE_KEEP.x and phy.y == CONFIG.PICO_SIZE_KEEP.y then 
+        -- keep
+    elseif phy.x == CONFIG.PICO_SIZE_FULLSCREEN.x and phy.y == CONFIG.PICO_SIZE_FULLSCREEN.y then
+        phy = PHY
+    else
+        window:setSize(phy.x, phy.y)
+    end
+
+    -- Logical
+    if log.x == CONFIG.PICO_SIZE_KEEP.x and log.y == CONFIG.PICO_SIZE_KEEP.y then
+       -- keep 
+    else
+        S.size.cur = log
+        TEX = renderer:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, S.size.cur.x, S.size.cur.y)
+        renderer:setLogicalSize(S.size.cur.x, S.size.cur.y)
+    end
+
+    if PHY.x == S.size.cur.x || PHY.y == S.size.cur.y then
+        --pico.set_grid(0)
+    end
 
     pico._output_present(0)
 end

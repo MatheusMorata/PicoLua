@@ -22,6 +22,10 @@ local CONFIG = {
 
     PICO_SIZE_KEEP = function()
         return CONFIG.Pico_Dim.new(0, 0)
+    end,
+
+    PICO_SIZE_FULLSCREEN = function()
+        return CONFIG.Pico_Dim.new(0, 1)
     end
 }
 
