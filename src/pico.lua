@@ -3,9 +3,8 @@ local pico = {}
 local SDL   = require "SDL"
 local TTF   = require "SDL.ttf" 
 local MIXER = require "SDL.mixer"
-
+local TEX = nil
 local CONFIG = dofile("../src/config.lua")
-
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
@@ -17,7 +16,9 @@ local S = {
         clear = { r = 0, g = 0, b = 0, a = 255 },
         draw  = { r = 255, g = 255, b = 255, a = 255 }
     },
-    
+
+    expert = 0,
+
     view = {
         phy = CONFIG.PICO_DIM_PHY(),
         log = CONFIG.PICO_DIM_LOG()
@@ -29,6 +30,8 @@ local S = {
     
     font = { ttf = nil, h = 0 },
     
+    grid = 1,
+
     scroll = { x = 0, y = 0 },
     
     zoom  = { x = 100, y = 100 }
@@ -62,28 +65,58 @@ function pico.set_font(file, h)
     S.font.ttf = font
 end
 
-function pico.output_clear()
-    renderer:setDrawColor{
+function pico._output_clear()
+    renderer:setDrawColor({
         r = S.color.clear[1],
         g = S.color.clear[2],
         b = S.color.clear[3],
         a = S.color.clear[4]
-    }
+    })
 
-    if pico.noclip() then
-        renderer:clear()
-    else
-        local r = { x = 0, y = 0, w = 0, h = 0 }
-        renderer:getClipRect(r)
-        renderer:fillRect(r)
-    end
+    renderer:clear()
 
-    renderer:setDrawColor{
+    renderer:setDrawColor({
         r = S.color.draw[1],
         g = S.color.draw[2],
         b = S.color.draw[3],
         a = S.color.draw[4]
-    }
+    })
+end
+
+--function picos.show_grid()
+
+--end
+
+function pico._output_present(force)
+
+    if S.expert and not force then
+        return
+    end
+    renderer:setTarget(TEX)
+    renderer:setDrawColor({
+        r = 0x77,
+        g = 0x77,
+        b = 0x77,
+        a = 0x77
+    })
+    renderer:clear()
+    renderer:copy(TEX)
+    -- show_grid()
+    renderer:present()
+    renderer:setDrawColor({
+        r = S.color.draw[1],
+        g = S.color.draw[2],
+        b = S.color.draw[3],
+        a = S.color.draw[4]
+    })
+
+    renderer:setTarget(TEX)
+end
+
+
+function pico.output_clear()
+    pico._output_clear()
+    pico._output_present(0)
 end
 
 function pico._zoom()
