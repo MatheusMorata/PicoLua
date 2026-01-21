@@ -8,41 +8,33 @@ local CONFIG = dofile("../src/config.lua")
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
-
 local S = {
-    clip = { x = 0, y = 0, w = 0, h = 0 },
-    
     color = {
-        clear = { r = 0, g = 0, b = 0, a = 255 },
-        draw  = { r = 255, g = 255, b = 255, a = 255 }
+        clear = { 0, 0, 0, 255 },
+        draw  = { 255, 255, 255, 255 }
     },
 
     expert = 0,
 
     view = {
-        phy = CONFIG.Pico_Dim.new(500, 500),
-        log = CONFIG.Pico_Dim.new(100, 100)
+        phy = CONFIG.Pico_Dim.new(500, 500)
     },
 
     dim = {
-        world  = { x = 0, y = 0 }
+        world = { y = 0 }
     },
-    
-    font = { ttf = nil, h = 0 },
-    
+
+    font = {
+        ttf = nil,
+        h   = 0
+    },
+
     grid = 1,
 
-    scroll = { x = 0, y = 0 },
-    
-    zoom  = { x = 100, y = 100 },
-
-    size = { org = CONFIG.Pico_Dim.new(100, 100), cur = CONFIG.Pico_Dim.new(100, 100)}
+    size = {
+        cur = CONFIG.Pico_Dim.new(100, 100)
+    }
 }
-
-function pico.noclip()
-    return (S.clip[3] == PICO_CLIP_RESET[3]) or
-           (S.clip[4] == PICO_CLIP_RESET[4])
-end
 
 function pico.set_font(file, h)
     if not h or h == 0 then
@@ -140,17 +132,6 @@ end
 function pico.output_clear()
     pico._output_clear()
     pico._output_present(0)
-end
-
-function pico._zoom()
-    return {
-        x = S.dim.world.x * S.zoom.x / 100,
-        y = S.dim.world.y * S.zoom.y / 100
-    }
-end
-
-function pico.set_scroll(pos)
-    S.scroll = pos;
 end
 
 function pico.init(on)
