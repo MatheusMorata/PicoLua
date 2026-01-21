@@ -32,7 +32,8 @@ local S = {
     grid = 1,
 
     size = {
-        cur = CONFIG.Pico_Dim.new(100, 100)
+        cur = CONFIG.Pico_Dim.new(100, 100),
+        org = CONFIG.Pico_Dim.new(100, 100)
     }
 }
 
@@ -132,6 +133,16 @@ end
 function pico.output_clear()
     pico._output_clear()
     pico._output_present(0)
+end
+
+function pico._set_size(phy, log)
+
+    pico._output_present(0)
+end
+
+function pico.set_size(phy, log)
+    S.size.org = log
+    --pico._set_size(phy, log)
 end
 
 function pico.init(on)
