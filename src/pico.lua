@@ -176,7 +176,11 @@ end
 
 function pico.set_size(phy, log)
     S.size.org = log
-    --pico._set_size(phy, log)
+    pico._set_size(phy, log)
+end
+
+function pico.set_title(title)
+    window:setTitle(title)
 end
 
 function pico.init(on)
