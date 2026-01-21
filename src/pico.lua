@@ -34,7 +34,9 @@ local S = {
 
     scroll = { x = 0, y = 0 },
     
-    zoom  = { x = 100, y = 100 }
+    zoom  = { x = 100, y = 100 },
+
+    size = { org = CONFIG.Pico_Dim.new(100, 100), cur = CONFIG.Pico_Dim.new(100, 100)}
 }
 
 function pico.noclip()
@@ -83,9 +85,30 @@ function pico._output_clear()
     })
 end
 
---function picos.show_grid()
+function picos.show_grid()
+    if not S.grid then
+        return
+    end
+    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
+    local phy = CONFIG.Pico_Dim.new(0,0)
+    renderer:setLogicalSize(phy.w, phy.h)
+    local step_x = phy.w / S.size.cur.x
+    for i = 0, phy.w, step_x do
+        renderer:drawLine(i, 0, i, phy.h)
+    end
+    local step_y = phy.h / S.size.cur.y
+    for j = 0, phy.h, step_y do
+        renderer:drawLine(0, j, phy.w, j)
+    end
+    renderer:setLogicalSize(S.size.cur.x, S.size.cur.y)
+    renderer:setDrawColor({
+        r = S.color.draw[1],
+        g = S.color.draw[2],
+        b = S.color.draw[3],
+        a = S.color.draw[4]
+    })
+end
 
---end
 
 function pico._output_present(force)
 
