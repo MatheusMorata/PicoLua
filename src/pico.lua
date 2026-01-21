@@ -134,6 +134,9 @@ function pico._output_present(force)
     renderer:setTarget(TEX)
 end
 
+function pico.output_present()
+    pico._output_present(1)
+end
 
 function pico.output_clear()
     pico._output_clear()
