@@ -1,4 +1,6 @@
-local CONFIG = {
+local CONFIG = {}
+
+CONFIG = {
     title = "PicoLua",
 
     undefined = "0x1FFF0000",
