@@ -38,6 +38,21 @@ local S = {
     }
 }
 
+function pico.input_delay(ms)
+    -- INCOMPLETO
+    while true do
+        local old = SDL.getTicks()
+        has = SDL.waitEvent(ms)
+
+        local dt = SDL.getTicks() - old
+        ms = ms - dt
+
+        if ms <= 0 then
+            return
+        end
+    end
+end
+
 function pico.get_size()
     return {phy = CONFIG.PHY(window), log = S.size.org}
 end
