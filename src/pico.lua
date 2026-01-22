@@ -8,10 +8,6 @@ local CONFIG = dofile("../src/config.lua")
 local PICO_CLIP_RESET = {0, 0, 0, 0}
 local DEFAULT_FONT = "tiny.ttf"
 
-local function PHY(window)
-    local x, y = window:getSize()
-    return {x = x, y = y}
-end
 
 local S = {
     color = {
@@ -87,18 +83,25 @@ function pico.show_grid()
     if not S.grid then
         return
     end
+
     renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
-    local phy = CONFIG.Pico_Dim.new(0,0)
+
+    local phy = CONFIG.PHY(window)
+
     renderer:setLogicalSize(phy.w, phy.h)
-    local step_x = phy.w / S.size.cur.x
+
+    local step_x = phy.w / S.size.cur.w
     for i = 0, phy.w, step_x do
-        renderer:drawLine(i, 0, i, phy.h)
+        renderer:drawLine { i, 0, i, phy.h }
     end
-    local step_y = phy.h / S.size.cur.y
+
+    local step_y = phy.h / S.size.cur.h
     for j = 0, phy.h, step_y do
-        renderer:drawLine(0, j, phy.w, j)
+        renderer:drawLine { 0, j, phy.w, j }
     end
-    renderer:setLogicalSize(S.size.cur.x, S.size.cur.y)
+
+    renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
+
     renderer:setDrawColor({
         r = S.color.draw[1],
         g = S.color.draw[2],
@@ -106,7 +109,6 @@ function pico.show_grid()
         a = S.color.draw[4]
     })
 end
-
 
 function pico._output_present(force)
 
@@ -121,7 +123,7 @@ function pico._output_present(force)
         a = 0x77
     })
     renderer:clear()
-    renderer:copy(TEXs)
+    renderer:copy(TEX)
     pico.show_grid()
     renderer:present()
     renderer:setDrawColor({
@@ -149,27 +151,32 @@ function pico.set_grid(on)
 end
 
 function pico._set_size(phy, log)
-    -- Physical
-    if phy.x == CONFIG.PICO_SIZE_KEEP.x and phy.y == CONFIG.PICO_SIZE_KEEP.y then 
-        -- keep
-    elseif phy.x == CONFIG.PICO_SIZE_FULLSCREEN.x and phy.y == CONFIG.PICO_SIZE_FULLSCREEN.y then
-        phy = PHY
-    else
-        window:setSize(phy.x, phy.y)
+    local PICO_SIZE_KEEP = CONFIG.PICO_SIZE_KEEP()
+    local PICO_SIZE_FULLSCREEN = CONFIG.PICO_SIZE_FULLSCREEN()
+    local PHY = CONFIG.PHY(window)
+
+    if phy.w ~= PICO_SIZE_KEEP.w or phy.h ~= PICO_SIZE_KEEP.h then
+        if phy.w == PICO_SIZE_FULLSCREEN.w and phy.h == PICO_SIZE_FULLSCREEN.h then
+            window:setSize(PHY.w, PHY.h)
+        else
+            window:setSize(phy.w, phy.h)
+        end
     end
 
-    -- Logical
-    if log.x == CONFIG.PICO_SIZE_KEEP.x and log.y == CONFIG.PICO_SIZE_KEEP.y then
-       -- keep 
-    else
+    if log.w ~= PICO_SIZE_KEEP.w or log.h ~= PICO_SIZE_KEEP.h then
         S.size.cur = log
-        renderer:destroyTexture(TEX)
-        TEX = renderer:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, S.size.cur.x, S.size.cur.y)
-        renderer:setLogicalSize(S.size.cur.x, S.size.cur.y)
+        if TEX then renderer:destroyTexture(TEX) end
+        TEX = renderer:createTexture(
+            SDL.pixelFormat.RGBA8888,
+            SDL.textureAccess.Target,
+            S.size.cur.w,
+            S.size.cur.h
+        )
+        renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
     end
 
-    if PHY.x == S.size.cur.x or PHY.y == S.size.cur.y then
-        pico.set_grid(0)
+    if PHY.w == S.size.cur.w or PHY.h == S.size.cur.h then
+        S.grid = 0
     end
 
     pico._output_present(0)

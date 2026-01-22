@@ -28,6 +28,11 @@ CONFIG = {
 
     PICO_SIZE_FULLSCREEN = function()
         return CONFIG.Pico_Dim.new(0, 1)
+    end,
+
+    PHY = function(window)
+        local w, h = window:getSize()
+        return CONFIG.Pico_Dim.new(w, h)
     end
 }
 
