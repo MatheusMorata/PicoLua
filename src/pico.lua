@@ -38,6 +38,10 @@ local S = {
     }
 }
 
+function pico.get_size()
+    return {PHY = CONFIG.PHY(window), S.size.org}
+end
+
 function pico.set_font(file, h)
     if not h or h == 0 then
         local wy =
