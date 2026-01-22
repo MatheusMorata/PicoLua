@@ -39,7 +39,7 @@ local S = {
 }
 
 function pico.get_size()
-    return {PHY = CONFIG.PHY(window), S.size.org}
+    return {phy = CONFIG.PHY(window), log = S.size.org}
 end
 
 function pico.set_font(file, h)
