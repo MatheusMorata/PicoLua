@@ -35,27 +35,39 @@ local function PHY(window)
 end
 
 local S = {
+
     color = {
         clear = { 0, 0, 0, 255 },
         draw  = { 255, 255, 255, 255 }
     },
+
     expert = 0,
+
     view = {
         phy = Pico_Dim(500, 500)
     },
+
     dim = {
         world = { y = 0 }
     },
+
     font = {
         ttf = nil,
         h   = 0
     },
+
     grid = 1,
     size = {
         cur = Pico_Dim(100, 100),
         org = Pico_Dim(100, 100)
-    }
+    },
+
     scroll = {
+        x = 0,
+        y = 0
+    },
+
+    zoom = {
         x = 0,
         y = 0
     }
@@ -63,6 +75,28 @@ local S = {
 
 function pico.set_scroll(pos) 
     S.scroll = pos
+end
+
+function pico.set_zoom(zoom)
+    S.zoom = zoom
+
+    pico.set_scroll({
+        x = S.scroll.x - (S.size.org.x - S.size.cur.x) / 2,
+        y = S.scroll.y - (S.size.org.y - S.size.cur.y) / 2
+    })
+
+    pico._set_size(
+        PICO_SIZE_KEEP(),
+        {
+            w = S.size.org.w * 100 / zoom.x,
+            h = S.size.org.h * 100 / zoom.y
+        }
+    )
+
+    pico.set_scroll({
+        x = S.scroll.x + (S.size.org.x - S.size.cur.x) / 2,
+        y = S.scroll.y + (S.size.org.y - S.size.cur.y) / 2
+    })
 end
 
 function pico.input_delay(ms)
