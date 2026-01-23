@@ -4,6 +4,11 @@ local SDL   = require "SDL"
 local TTF   = require "SDL.ttf"
 local MIXER = require "SDL.mixer"
 
+local TEX = nil
+local title = "Titulo"
+local undefined = "0x1FFF0000"
+local DEFAULT_FONT = "tiny.ttf"
+
 local function Pico_Dim(w, h)
     return { w = w or 0, h = h or 0 }
 end
@@ -29,14 +34,6 @@ local function PHY(window)
     return Pico_Dim(w, h)
 end
 
-local TEX = nil
-local title = "Titulo"
-local undefined = "0x1FFF0000"
-local DEFAULT_FONT = "tiny.ttf"
-
-local window = nil
-local renderer = nil
-
 local S = {
     color = {
         clear = { 0, 0, 0, 255 },
@@ -58,7 +55,15 @@ local S = {
         cur = Pico_Dim(100, 100),
         org = Pico_Dim(100, 100)
     }
+    scroll = {
+        x = 0,
+        y = 0
+    }
 }
+
+function pico.set_scroll(pos) 
+    S.scroll = pos
+end
 
 function pico.input_delay(ms)
     while true do
