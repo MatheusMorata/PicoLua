@@ -73,6 +73,11 @@ local S = {
     }
 }
 
+function pico.set_grid(on) 
+    S.grid = on
+    pico._output_present(0)
+end
+
 function pico.set_scroll(pos) 
     S.scroll = pos
 end
