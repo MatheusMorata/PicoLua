@@ -79,10 +79,28 @@ local S = {
     },
 
     grid = 1,
+    angle = 0,
 
     size = {
         cur = Pico_Dim(100, 100),
         org = Pico_Dim(100, 100)
+    },
+
+    cursor = {
+        x   = 0,
+        cur = { x = 0, y = 0 }
+    },
+
+    flip = {
+        x = 0,
+        y = 0
+    },
+
+    crop = {
+        x = 0,
+        y = 0,
+        w = 0,
+        h = 0
     },
 
     scroll = { x = 0, y = 0 },
@@ -140,6 +158,31 @@ function pico.set.color_draw(color)
         b = S.color.draw.b,
         a = S.color.draw.a
     })
+end
+
+function pico.set.cursor(pos)
+    S.cursor.cur = pos
+    S.cursor.x = pos.x
+end
+
+function pico.set.expert(on)
+    S.expert = on
+end
+
+function pico.set.flip(flip) 
+    S.flip = flip
+end
+
+function pico.set.crop(crop)
+    S.crop = crop
+end
+
+function pico.set.rotate(angle)
+    S.angle = angle
+end
+
+function
+
 end
 
 function pico._set.size(phy, log)
