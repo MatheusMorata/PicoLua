@@ -120,9 +120,11 @@ end
 
 -- SET
 
-function pico.set.anchor.draw(anchor)
+function pico.set.anchor_draw(anchor)
     S.anchor.draw = anchor
 end
+
+
 
 function pico._set.size(phy, log)
     local KEEP = PICO_SIZE_KEEP()
