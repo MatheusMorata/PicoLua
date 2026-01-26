@@ -59,8 +59,8 @@ local S = {
     }, 
 
     color = {
-        clear = { 0, 0, 0, 255 },
-        draw  = { 255, 255, 255, 255 }
+        clear = { r = 0, g = 0, b = 0, a = 255 },
+        draw  = { r = 255, g = 255, b = 255, a = 255 }
     },
 
     expert = 0,
@@ -130,6 +130,16 @@ end
 
 function pico.set.color_clear(color)
     S.color.clear = color
+end
+
+function pico.set.color_draw(color)
+    S.color.draw = color
+    renderer:setDrawColor({
+        r = S.color.draw.r,
+        g = S.color.draw.g,
+        b = S.color.draw.b,
+        a = S.color.draw.a
+    })
 end
 
 function pico._set.size(phy, log)
