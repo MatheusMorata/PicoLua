@@ -76,21 +76,7 @@ local S = {
     zoom   = { x = 0, y = 0 }
 }
 
-function pico._output.clear()
-    renderer:setDrawColor({
-        r = S.color.clear[1],
-        g = S.color.clear[2],
-        b = S.color.clear[3],
-        a = S.color.clear[4]
-    })
-    renderer:clear()
-    renderer:setDrawColor({
-        r = S.color.draw[1],
-        g = S.color.draw[2],
-        b = S.color.draw[3],
-        a = S.color.draw[4]
-    })
-end
+-- SHOW
 
 function pico.show.grid()
     if not S.grid then return end
@@ -119,17 +105,7 @@ function pico.show.grid()
     })
 end
 
-function pico._output.present(force)
-    if S.expert and not force then return end
-
-    renderer:setTarget(TEX)
-    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
-    renderer:clear()
-    renderer:copy(TEX)
-    pico.show.grid()
-    renderer:present()
-    renderer:setTarget(TEX)
-end
+-- SET
 
 function pico._set.size(phy, log)
     local KEEP = PICO_SIZE_KEEP()
@@ -228,12 +204,17 @@ function pico.set.title(t)
     if window then window:setTitle(t) end
 end
 
+-- GET
+
 function pico.get.size()
     return {
         phy = PHY(window),
         log = S.size.org
     }
 end
+
+
+-- INPUT
 
 function pico.input.event(evt, type)
     while true do
@@ -260,6 +241,37 @@ function pico.input.delay(ms)
     end
 end
 
+-- OUTPUT
+
+function pico._output.clear()
+    renderer:setDrawColor({
+        r = S.color.clear[1],
+        g = S.color.clear[2],
+        b = S.color.clear[3],
+        a = S.color.clear[4]
+    })
+    renderer:clear()
+    renderer:setDrawColor({
+        r = S.color.draw[1],
+        g = S.color.draw[2],
+        b = S.color.draw[3],
+        a = S.color.draw[4]
+    })
+end
+
+
+function pico._output.present(force)
+    if S.expert and not force then return end
+
+    renderer:setTarget(TEX)
+    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
+    renderer:clear()
+    renderer:copy(TEX)
+    pico.show.grid()
+    renderer:present()
+    renderer:setTarget(TEX)
+end
+
 function pico.output.clear()
     pico._output.clear()
     pico._output.present(0)
@@ -268,6 +280,8 @@ end
 function pico.output.present()
     pico._output.present(1)
 end
+
+-- INIT
 
 function pico.init(on)
     if on then
