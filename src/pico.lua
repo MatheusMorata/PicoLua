@@ -2,6 +2,10 @@ local pico = {
     set   = {},
     get   = {},
     input = {},
+    output = {},
+    show = {},
+    _output = {},
+    _set = {},
 }
 
 local SDL   = require "SDL"
@@ -72,7 +76,7 @@ local S = {
     zoom   = { x = 0, y = 0 }
 }
 
-function pico._output_clear()
+function pico._output.clear()
     renderer:setDrawColor({
         r = S.color.clear[1],
         g = S.color.clear[2],
@@ -88,7 +92,7 @@ function pico._output_clear()
     })
 end
 
-function pico.show_grid()
+function pico.show.grid()
     if not S.grid then return end
 
     renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
@@ -115,19 +119,19 @@ function pico.show_grid()
     })
 end
 
-function pico._output_present(force)
+function pico._output.present(force)
     if S.expert and not force then return end
 
     renderer:setTarget(TEX)
     renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
     renderer:clear()
     renderer:copy(TEX)
-    pico.show_grid()
+    pico.show.grid()
     renderer:present()
     renderer:setTarget(TEX)
 end
 
-function pico._set_size(phy, log)
+function pico._set.size(phy, log)
     local KEEP = PICO_SIZE_KEEP()
     local FULL = PICO_SIZE_FULLSCREEN()
     local CUR  = PHY(window)
@@ -159,12 +163,12 @@ function pico._set_size(phy, log)
         S.grid = 0
     end
 
-    pico._output_present(0)
+    pico._output.present(0)
 end
 
 function pico.set.grid(on)
     S.grid = on and 1 or 0
-    pico._output_present(0)
+    pico._output.present(0)
 end
 
 function pico.set.scroll(pos)
@@ -179,7 +183,7 @@ function pico.set.zoom(zoom)
         y = S.scroll.y - (S.size.org.y - S.size.cur.y) / 2
     })
 
-    pico._set_size(
+    pico._set.size(
         PICO_SIZE_KEEP(),
         {
             w = S.size.org.w * 100 / zoom.x,
@@ -216,7 +220,7 @@ end
 
 function pico.set.size(phy, log)
     S.size.org = log
-    pico._set_size(phy, log)
+    pico._set.size(phy, log)
 end
 
 function pico.set.title(t)
@@ -241,13 +245,13 @@ function pico.input.delay(ms)
     end
 end
 
-function pico.output_clear()
-    pico._output_clear()
-    pico._output_present(0)
+function pico.output.clear()
+    pico._output.clear()
+    pico._output.present(0)
 end
 
-function pico.output_present()
-    pico._output_present(1)
+function pico.output.present()
+    pico._output.present(1)
 end
 
 function pico.init(on)
@@ -274,7 +278,7 @@ function pico.init(on)
 
         pico.set.size(PICO_DIM_PHY(), PICO_DIM_LOG())
         pico.set.font(nil, 0)
-        pico.output_clear()
+        pico.output.clear()
     else
         if S.font.ttf then
             S.font.ttf:close()
