@@ -235,6 +235,21 @@ function pico.get.size()
     }
 end
 
+function pico.input.event(evt, type)
+    while true do
+        local x = SDL.waitEvent()
+        if event_from_sdl(x, type) then
+            if evt ~= nil then
+                for k, v in pairs(x) do
+                    evt[k] = v
+                end
+            end
+            return
+        end
+    end
+end
+
+
 function pico.input.delay(ms)
     while true do
         local old = SDL.getTicks()
