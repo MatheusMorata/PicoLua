@@ -16,6 +16,13 @@ local TEX = nil
 local title = "Titulo"
 local undefined = "0x1FFF0000"
 local DEFAULT_FONT = "tiny.ttf"
+local PICO_LEFT   = 0
+local PICO_CENTER = 50
+local PICO_RIGHT  = 100
+local PICO_TOP    = 0
+local PICO_MIDDLE = 50
+local PICO_BOTTOM = 100
+
 
 local window, renderer
 
@@ -45,6 +52,12 @@ local function PHY(window)
 end
 
 local S = {
+
+    anchor = {
+        draw = { x = PICO_CENTER, y = PICO_MIDDLE},
+        rotate = { x = PICO_CENTER, y = PICO_MIDDLE}
+    }, 
+
     color = {
         clear = { 0, 0, 0, 255 },
         draw  = { 255, 255, 255, 255 }
@@ -106,6 +119,10 @@ function pico.show.grid()
 end
 
 -- SET
+
+function pico.set.anchor.draw(anchor)
+    S.anchor.draw = anchor
+end
 
 function pico._set.size(phy, log)
     local KEEP = PICO_SIZE_KEEP()
