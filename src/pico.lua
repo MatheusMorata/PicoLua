@@ -124,7 +124,13 @@ function pico.set.anchor_draw(anchor)
     S.anchor.draw = anchor
 end
 
+function pico.set.anchor_rotate(rotate)
+    S.anchor.rotate = rotate
+end
 
+function pico.set.color_clear(color)
+    S.color.clear = color
+end
 
 function pico._set.size(phy, log)
     local KEEP = PICO_SIZE_KEEP()
