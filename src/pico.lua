@@ -12,7 +12,6 @@ local MIXER = require "SDL.mixer"
 
 local TEX = nil
 local title = "Titulo"
-local undefined = "0x1FFF0000"
 local DEFAULT_FONT = "tiny.ttf"
 local PICO_LEFT   = 0
 local PICO_CENTER = 50
@@ -298,10 +297,10 @@ function pico.init(on)
         assert(SDL.init { SDL.flags.Video })
         window = assert(SDL.createWindow {
             title  = title,
-            width  = undefined,
-            height = undefined,
-            x      = S.view.phy.w,
-            y      = S.view.phy.h,
+            width  = S.view.phy.w,
+            height = S.view.phy.h,
+            x      = nil,
+            y      = nil,
             flags  = { SDL.window.Shown }
         })
         renderer = assert(SDL.createRenderer(
