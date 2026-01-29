@@ -167,6 +167,15 @@ function pico.show.grid()
     })
 end
 
+function pico.set.show(on)
+    if on then
+        window:show()
+        output_present(0)
+    else
+        window:hide()
+    end
+end
+
 function pico.set.style(style) 
     S.style = style
 end
