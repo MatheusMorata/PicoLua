@@ -83,7 +83,8 @@ local S = {
     flip = { x = 0, y = 0 },
     crop = { x = 0, y = 0, w = 0, h = 0 },
     scroll = { x = 0, y = 0 },
-    zoom   = { x = 0, y = 0 }
+    zoom   = { x = 0, y = 0 },
+    scale = {x = 100, y = 100}
 }
 
 local function output_clear()
@@ -225,6 +226,10 @@ end
 
 function pico.set.scroll(pos)
     S.scroll = pos
+end
+
+function pico.set.scale(scale)
+    S.scale = scale     
 end
 
 function pico.set.zoom(zoom)
