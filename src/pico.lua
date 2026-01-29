@@ -69,6 +69,9 @@ local S = {
     },
     grid = 1,
     angle = 0,
+    style = {
+        fill = 0
+    },
     size = {
         cur = Pico_Dim(100, 100),
         org = Pico_Dim(100, 100)
@@ -162,6 +165,10 @@ function pico.show.grid()
         b = S.color.draw[3],
         a = S.color.draw[4]
     })
+end
+
+function pico.set.style(style) 
+    S.style = style
 end
 
 function pico.set.anchor_draw(anchor)
