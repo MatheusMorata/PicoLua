@@ -342,6 +342,21 @@ function pico.get_show()
     return (window:getFlags() & SDL.window.Shown) ~= 0
 end
 
+function pico.get_style()
+    return S.style
+end
+
+function pico.get_ticks()
+    return SDL.getTicks
+end
+
+function pico.get_title()
+    return window:getTitle
+end
+
+function pico.get_zoom()
+    return S.zoom
+end
 
 function pico.input.event(evt, type)
     while true do
