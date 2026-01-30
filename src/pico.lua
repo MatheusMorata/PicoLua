@@ -318,9 +318,28 @@ function pico.get_key(key)
 end
 
 function pico.get_mouse()
-    local pos = {x = nil, y = nil}
-    pos.x, pos.y = SDL.getMouseState()
-    return pos
+    local x, y = SDL.getMouseState()
+    return { x = x, y = y}
+end
+
+function pico.get_crop()
+    return S.crop
+end
+
+function pico.get_rotate()
+    return S.angle
+end
+
+function pico.get_scale()
+    return S.scale
+end
+
+function pico.get_scroll()
+    return S.scroll
+end
+
+function pico.get_show()
+    return window:getFlags() and SDL.window.Shown
 end
 
 function pico.input.event(evt, type)
