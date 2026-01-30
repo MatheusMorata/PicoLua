@@ -280,6 +280,49 @@ function pico.get.size()
     return { phy = PHY(window), log = S.size.org }
 end
 
+function pico.get_anchor_draw()
+    return S.anchor.draw
+end
+
+function pico.get_anchor_rotate()
+    return S.anchor.rotate
+end
+
+function pico.get_color_clear()
+    return S.color.clear
+end
+
+function pico.get_anchor_draw()
+    return S.color.clear
+end
+
+function pico.get_cursor()
+    return S.cursor.cur
+end
+
+function pico.get_expert()
+    return S.expert
+end
+
+function pico.get_flip()
+    return S.flip
+end
+
+function pico.get_grid()
+    return S.grid
+end
+
+function pico.get_key(key)
+    local keys = SDL.getKeyboardState()
+    return keys[key]
+end
+
+function pico.get_mouse()
+    local pos = {x = nil, y = nil}
+    pos.x, pos.y = SDL.getMouseState()
+    return pos
+end
+
 function pico.input.event(evt, type)
     while true do
         local x = SDL.waitEvent()
