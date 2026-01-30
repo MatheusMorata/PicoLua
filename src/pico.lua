@@ -339,8 +339,9 @@ function pico.get_scroll()
 end
 
 function pico.get_show()
-    return window:getFlags() and SDL.window.Shown
+    return (window:getFlags() & SDL.window.Shown) ~= 0
 end
+
 
 function pico.input.event(evt, type)
     while true do
