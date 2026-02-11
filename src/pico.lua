@@ -135,7 +135,7 @@ end
 local function output_draw_tex(pos, tex, size)
 
     -- tamanho original da textura
-    local _, _, tw, th = tex:query()
+    local _, _, tw, th = TEX:query()
 
     local rct = { x = 0, y = 0, w = tw, h = th }
 
@@ -467,6 +467,37 @@ function pico.input.delay(ms)
         ms = ms - dt
         if ms <= 0 then return end
     end
+end
+
+function pico.output.draw_line(p1, p2)
+    
+    local pos = {
+        x = hanchor(math.min(p1.x, p2.x), 1),
+        y = vanchor(math.min(p1.y, p2.y), 1)
+    }
+    
+    local w = math.abs(p1.x - p2.x) + 1
+    local h = math.abs(p1.y - p2.y) + 1
+
+    local aux = renderer:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, w, h)
+    
+    aux:setBlendMode(SDL.blendMode.Blend)
+    renderer:setTarget(aux)
+    
+    local clr = S.color.clear
+
+    S.color.clear = { r = 0, g = 0, b = 0, a = 255 }
+    output_clear()
+    S.color.clear = clr
+    renderer:drawLine(p1.x-pos.x,p1.y-pos.y, p2.x-pos.x,p2.y-pos.y)
+    renderer:setTarget(TEX)
+    
+    local anc = S.anchor.draw
+
+    S.anchor.draw = {x = PICO_LEFT, y = PICO_TOP }
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP())
+    S.anchor.draw = anc;
+    renderer:destroyTexture(aux)
 end
 
 function pico.output.draw_pixel(pos)
