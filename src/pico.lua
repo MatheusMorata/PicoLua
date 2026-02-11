@@ -47,6 +47,15 @@ local function PHY(window)
     return Pico_Dim(w, h)
 end
 
+local function X(v, w)
+    return hanchor(v, w) - S.scroll.x
+end
+
+local function Y(v, h)
+    return vanchor(v, h) - S.scroll.y
+end
+
+
 local S = {
     anchor = {
         draw = { x = PICO_CENTER, y = PICO_MIDDLE },
@@ -301,10 +310,6 @@ function pico.get_color_clear()
     return S.color.clear
 end
 
-function pico.get_anchor_draw()
-    return S.color.clear
-end
-
 function pico.get_cursor()
     return S.cursor.cur
 end
@@ -391,9 +396,10 @@ function pico.input.delay(ms)
     end
 end
 
---function (pos)
---    renderer:drawPoint()
---end
+function pico.output.draw.pixel(pos)
+    renderer:drawPoint(X(pos.x, 1), Y(pos.y, 1))
+    output_present(0)
+end
 
 function pico.output.clear()
     output_clear()
