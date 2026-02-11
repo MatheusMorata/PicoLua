@@ -396,7 +396,7 @@ function pico.input.delay(ms)
     end
 end
 
-function pico.output.draw.pixel(pos)
+function pico.output.draw_pixel(pos)
     renderer:drawPoint(X(pos.x, 1), Y(pos.y, 1))
     output_present(0)
 end
