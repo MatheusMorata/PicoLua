@@ -132,6 +132,79 @@ local function output_present(force)
     renderer:setTarget(TEX)
 end
 
+local function output_draw_tex(pos, tex, size)
+
+    -- tamanho original da textura
+    local _, _, tw, th = tex:query()
+
+    local rct = { x = 0, y = 0, w = tw, h = th }
+
+    -- crop
+    local crp = {
+        x = S.crop.x,
+        y = S.crop.y,
+        w = S.crop.w ~= 0 and S.crop.w or tw,
+        h = S.crop.h ~= 0 and S.crop.h or th
+    }
+
+    -- sizing
+    if size.x == 0 and size.y == 0 then
+        rct.w = crp.w
+        rct.h = crp.h
+
+    elseif size.x == 0 then
+        rct.w = rct.w * (size.y / rct.h)
+        rct.h = size.y
+
+    elseif size.y == 0 then
+        rct.h = rct.h * (size.x / rct.w)
+        rct.w = size.x
+
+    else
+        rct.w = size.x
+        rct.h = size.y
+    end
+
+    -- SCALE
+    rct.w = (S.scale.x * rct.w) / 100
+    rct.h = (S.scale.y * rct.h) / 100
+
+    -- posição final (anchor + scroll)
+    rct.x = X(pos.x, rct.w)
+    rct.y = Y(pos.y, rct.h)
+
+    -- ponto de rotação
+    local rot = {
+        x = (S.anchor.rotate.x * rct.w) / 100,
+        y = (S.anchor.rotate.y * rct.h) / 100
+    }
+
+    -- flip
+    local flip = SDL.flip.None
+    if S.flip.y then
+        flip = SDL.flip.Vertical
+    elseif S.flip.x then
+        flip = SDL.flip.Horizontal
+    end
+
+    local angle = S.angle
+    if S.flip.x and S.flip.y then
+        angle = angle + 180
+    end
+
+    -- draw
+    renderer:copyEx(
+        tex,
+        crp,
+        rct,
+        angle,
+        rot,
+        flip
+    )
+
+    output_present(0)
+end
+
 local function set_size_internal(phy, log)
     local KEEP = PICO_SIZE_KEEP()
     local FULL = PICO_SIZE_FULLSCREEN()
