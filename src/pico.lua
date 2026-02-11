@@ -87,6 +87,15 @@ local S = {
     scale = {x = 100, y = 100}
 }
 
+
+local function hanchor(x, w)
+    return x - (S.anchor.draw.x*w)/100
+end 
+
+local function vanchor(y, h)
+    return y - (S.anchor.draw.x*h)/100
+end
+
 local function output_clear()
     renderer:setDrawColor({
         r = S.color.clear[1],
@@ -381,6 +390,10 @@ function pico.input.delay(ms)
         if ms <= 0 then return end
     end
 end
+
+--function (pos)
+--    renderer:drawPoint()
+--end
 
 function pico.output.clear()
     output_clear()
