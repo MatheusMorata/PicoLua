@@ -401,6 +401,21 @@ function pico.output.draw_pixel(pos)
     output_present(0)
 end
 
+function pico.output.draw_pixels(apos, count)
+    local vec = {}
+
+    for i = 1, count do
+        local p = apos[i]
+
+        vec[#vec+1] = X(p.x, 1)
+        vec[#vec+1] = Y(p.y, 1)
+    end
+
+    renderer:drawPoints(vec)
+    output_present(0)
+end
+
+
 function pico.output.clear()
     output_clear()
     output_present(0)
