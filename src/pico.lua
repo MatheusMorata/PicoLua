@@ -132,7 +132,7 @@ local function output_present(force)
     renderer:setTarget(TEX)
 end
 
-local function _pico_output_draw_tex(pos, tex, size)
+local function output_draw_tex(pos, tex, size)
 
     -- tamanho original da textura
     local _, _, tw, th = tex:query()
