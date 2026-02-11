@@ -132,7 +132,7 @@ local function output_present(force)
     renderer:setTarget(TEX)
 end
 
-local function output_draw_tex(pos, tex, size)
+local function _pico_output_draw_tex(pos, tex, size)
 
     -- tamanho original da textura
     local _, _, tw, th = tex:query()
@@ -180,11 +180,11 @@ local function output_draw_tex(pos, tex, size)
     }
 
     -- flip
-    local flip = SDL.flip.None
+    local flip = SDL.rendererFlip.None
     if S.flip.y then
-        flip = SDL.flip.Vertical
+        flip = SDL.rendererFlip.Vertical
     elseif S.flip.x then
-        flip = SDL.flip.Horizontal
+        flip = SDL.rendererFlip.Horizontal
     end
 
     local angle = S.angle
