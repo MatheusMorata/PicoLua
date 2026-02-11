@@ -356,11 +356,11 @@ function pico.get_style()
 end
 
 function pico.get_ticks()
-    return SDL.getTicks
+    return SDL.getTicks()
 end
 
 function pico.get_title()
-    return window:getTitle
+    return window:getTitle()
 end
 
 function pico.get_zoom()
