@@ -26,35 +26,6 @@ local function Pico_Dim(w, h)
     return { w = w or 0, h = h or 0 }
 end
 
-local function PICO_DIM_PHY()
-    return Pico_Dim(500, 500)
-end
-
-local function PICO_DIM_LOG()
-    return Pico_Dim(100, 100)
-end
-
-local function PICO_SIZE_KEEP()
-    return Pico_Dim(0, 0)
-end
-
-local function PICO_SIZE_FULLSCREEN()
-    return Pico_Dim(0, 1)
-end
-
-local function PHY(window)
-    local w, h = window:getSize()
-    return Pico_Dim(w, h)
-end
-
-local function X(v, w)
-    return hanchor(v, w) - S.scroll.x
-end
-
-local function Y(v, h)
-    return vanchor(v, h) - S.scroll.y
-end
-
 
 local S = {
     anchor = {
@@ -96,6 +67,26 @@ local S = {
     scale = {x = 100, y = 100}
 }
 
+local function PICO_DIM_PHY()
+    return Pico_Dim(500, 500)
+end
+
+local function PICO_DIM_LOG()
+    return Pico_Dim(100, 100)
+end
+
+local function PICO_SIZE_KEEP()
+    return Pico_Dim(0, 0)
+end
+
+local function PICO_SIZE_FULLSCREEN()
+    return Pico_Dim(0, 1)
+end
+
+local function PHY(window)
+    local w, h = window:getSize()
+    return Pico_Dim(w, h)
+end
 
 local function hanchor(x, w)
     return x - (S.anchor.draw.x*w)/100
@@ -103,6 +94,14 @@ end
 
 local function vanchor(y, h)
     return y - (S.anchor.draw.x*h)/100
+end
+
+local function X(v, w)
+    return hanchor(v, w) - S.scroll.x
+end
+
+local function Y(v, h)
+    return vanchor(v, h) - S.scroll.y
 end
 
 local function output_clear()
@@ -220,7 +219,9 @@ local function set_size_internal(phy, log)
 
     if log.w ~= KEEP.w or log.h ~= KEEP.h then
         S.size.cur = log
-        if TEX then renderer:destroyTexture(TEX) end
+        if TEX then
+            TEX = nil
+        end
         TEX = renderer:createTexture(
             SDL.pixelFormat.RGBA8888,
             SDL.textureAccess.Target,
@@ -349,7 +350,6 @@ function pico.set.font(file, h)
     end
     S.font.h = h
     if S.font.ttf then
-        S.font.ttf:close()
         S.font.ttf = nil
     end
     local font, err = TTF.open(file or DEFAULT_FONT, S.font.h)
@@ -501,7 +501,10 @@ function pico.output.draw_line(p1, p2)
 end
 
 function pico.output.draw_pixel(pos)
-    renderer:drawPoint(X(pos.x, 1), Y(pos.y, 1))
+    renderer:drawPoint {
+        X(pos.x, 1),
+        Y(pos.y, 1)
+    }
     output_present(0)
 end
 
@@ -551,13 +554,10 @@ function pico.init(on)
         pico.output.clear()
     else
         if S.font.ttf then
-            S.font.ttf:close()
             S.font.ttf = nil
         end
         MIXER.closeAudio()
         TTF.quit()
-        if renderer then renderer:destroy() end
-        if window then window:destroy() end
         SDL.quit()
     end
 end
