@@ -122,16 +122,16 @@ end
 
 local function show_grid()
     if not S.grid then return end
-    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
+    renderer:setDrawColor({ r = 0x77, g = 0x77, b = 0x77, a = 0x77})
     local phy = PHY(window)
     renderer:setLogicalSize(phy.w, phy.h)
     local step_x = phy.w / S.size.cur.w
     for i = 0, phy.w, step_x do
-        renderer:drawLine { i, 0, i, phy.h }
+        renderer:drawLine({ x1 = i, y1 = 0, x2 = i, y2 = phy.h })
     end
     local step_y = phy.h / S.size.cur.h
     for j = 0, phy.h, step_y do
-        renderer:drawLine { 0, j, phy.w, j }
+        renderer:drawLine({ x1 = 0, y1 = j, x2 = phy.w, y2 = j })
     end
     renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
     renderer:setDrawColor {
