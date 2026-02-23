@@ -122,7 +122,7 @@ end
 
 local function output_present(force)
     if S.expert and not force then return end
-    renderer:setTarget(TEX)
+    renderer:setTarget(nil)
     renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
     renderer:clear()
     renderer:copy(TEX)
@@ -219,9 +219,6 @@ local function set_size_internal(phy, log)
 
     if log.w ~= KEEP.w or log.h ~= KEEP.h then
         S.size.cur = log
-        if TEX then
-            TEX = nil
-        end
         TEX = renderer:createTexture(
             SDL.pixelFormat.RGBA8888,
             SDL.textureAccess.Target,
@@ -229,6 +226,7 @@ local function set_size_internal(phy, log)
             S.size.cur.h
         )
         renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
+        renderer:setTarget(TEX)
     end
 
     if CUR.w == S.size.cur.w or CUR.h == S.size.cur.h then
@@ -252,12 +250,12 @@ function pico.show.grid()
         renderer:drawLine { 0, j, phy.w, j }
     end
     renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
-    renderer:setDrawColor({
+    renderer:setDrawColor {
         r = S.color.draw[1],
         g = S.color.draw[2],
         b = S.color.draw[3],
         a = S.color.draw[4]
-    })
+    }
 end
 
 function pico.set.show(on)
@@ -534,28 +532,20 @@ end
 
 function pico.init(on)
     if on then
-        assert(SDL.init { SDL.flags.Video })
-        window = assert(SDL.createWindow {
+        SDL.init { SDL.flags.Video }
+        window = SDL.createWindow {
             title  = title,
             width  = S.view.phy.w,
             height = S.view.phy.h,
-            x      = nil,
-            y      = nil,
             flags  = { SDL.window.Shown }
-        })
-        renderer = assert(SDL.createRenderer(
-            window, -1, SDL.rendererFlags.Accelerated
-        ))
+        }
+        renderer = SDL.createRenderer(window, -1, SDL.rendererFlags.Accelerated)
         renderer:setDrawBlendMode(SDL.blendMode.Blend)
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16, 2, 1024)
         pico.set.size(PICO_DIM_PHY(), PICO_DIM_LOG())
-        pico.set.font(nil, 0)
         pico.output.clear()
     else
-        if S.font.ttf then
-            S.font.ttf = nil
-        end
         MIXER.closeAudio()
         TTF.quit()
         SDL.quit()
