@@ -26,7 +26,6 @@ local function Pico_Dim(w, h)
     return { w = w or 0, h = h or 0 }
 end
 
-
 local S = {
     anchor = {
         draw = { x = PICO_CENTER, y = PICO_MIDDLE },
@@ -145,11 +144,15 @@ end
 local function output_present(force)
     if S.expert and not force then return end
     renderer:setTarget(nil)
-    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
+    renderer:setDrawColor({r = 0x77, g = 0x77, b = 0x77, a = 0x77})
     renderer:clear()
     renderer:copy(TEX)
     show_grid()
     renderer:present()
+    renderer:setDrawColor({r = S.color.draw.r,
+                           g = S.color.draw.g,
+                           b = S.color.draw.b,
+                           a = S.color.draw.a})
     renderer:setTarget(TEX)
 end
 
