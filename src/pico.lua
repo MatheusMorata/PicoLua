@@ -120,13 +120,35 @@ local function output_clear()
     })
 end
 
+local function show_grid()
+    if not S.grid then return end
+    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
+    local phy = PHY(window)
+    renderer:setLogicalSize(phy.w, phy.h)
+    local step_x = phy.w / S.size.cur.w
+    for i = 0, phy.w, step_x do
+        renderer:drawLine { i, 0, i, phy.h }
+    end
+    local step_y = phy.h / S.size.cur.h
+    for j = 0, phy.h, step_y do
+        renderer:drawLine { 0, j, phy.w, j }
+    end
+    renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
+    renderer:setDrawColor {
+        r = S.color.draw[1],
+        g = S.color.draw[2],
+        b = S.color.draw[3],
+        a = S.color.draw[4]
+    }
+end
+
 local function output_present(force)
     if S.expert and not force then return end
     renderer:setTarget(nil)
     renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
     renderer:clear()
     renderer:copy(TEX)
-    pico.show.grid()
+    show_grid()
     renderer:present()
     renderer:setTarget(TEX)
 end
@@ -234,28 +256,6 @@ local function set_size_internal(phy, log)
     end
 
     output_present(0)
-end
-
-function pico.show.grid()
-    if not S.grid then return end
-    renderer:setDrawColor(0x77, 0x77, 0x77, 0x77)
-    local phy = PHY(window)
-    renderer:setLogicalSize(phy.w, phy.h)
-    local step_x = phy.w / S.size.cur.w
-    for i = 0, phy.w, step_x do
-        renderer:drawLine { i, 0, i, phy.h }
-    end
-    local step_y = phy.h / S.size.cur.h
-    for j = 0, phy.h, step_y do
-        renderer:drawLine { 0, j, phy.w, j }
-    end
-    renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
-    renderer:setDrawColor {
-        r = S.color.draw[1],
-        g = S.color.draw[2],
-        b = S.color.draw[3],
-        a = S.color.draw[4]
-    }
 end
 
 function pico.set.show(on)
@@ -499,10 +499,10 @@ function pico.output.draw_line(p1, p2)
 end
 
 function pico.output.draw_pixel(pos)
-    renderer:drawPoint {
-        X(pos.x, 1),
-        Y(pos.y, 1)
-    }
+    renderer:drawPoint({
+        x = X(pos.x, 1),
+        y = Y(pos.y, 1)
+    })
     output_present(0)
 end
 
