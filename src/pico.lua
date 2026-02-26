@@ -93,7 +93,7 @@ local function hanchor(x, w)
 end 
 
 local function vanchor(y, h)
-    return y - (S.anchor.draw.x*h)/100
+    return y - (S.anchor.draw.y*h)/100
 end
 
 local function X(v, w)
