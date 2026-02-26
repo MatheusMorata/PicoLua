@@ -159,20 +159,17 @@ end
 
 local function output_draw_tex(pos, tex, size)
 
-    -- tamanho original da textura
-    local _, _, tw, th = TEX:query()
+    local _, _, tw, th = tex:query()
 
     local rct = { x = 0, y = 0, w = tw, h = th }
 
-    -- crop
     local crp = {
         x = S.crop.x,
         y = S.crop.y,
         w = S.crop.w ~= 0 and S.crop.w or tw,
         h = S.crop.h ~= 0 and S.crop.h or th
     }
-
-    -- sizing
+    
     if size.x == 0 and size.y == 0 then
         rct.w = crp.w
         rct.h = crp.h
