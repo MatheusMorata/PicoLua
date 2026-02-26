@@ -106,17 +106,17 @@ end
 
 local function output_clear()
     renderer:setDrawColor({
-        r = S.color.clear[1],
-        g = S.color.clear[2],
-        b = S.color.clear[3],
-        a = S.color.clear[4]
+        r = S.color.clear.r,
+        g = S.color.clear.g,
+        b = S.color.clear.b,
+        a = S.color.clear.a
     })
     renderer:clear()
     renderer:setDrawColor({
-        r = S.color.draw[1],
-        g = S.color.draw[2],
-        b = S.color.draw[3],
-        a = S.color.draw[4]
+        r = S.color.draw.r,
+        g = S.color.draw.g,
+        b = S.color.draw.b,
+        a = S.color.draw.a
     })
 end
 
@@ -169,7 +169,7 @@ local function output_draw_tex(pos, tex, size)
         w = S.crop.w ~= 0 and S.crop.w or tw,
         h = S.crop.h ~= 0 and S.crop.h or th
     }
-    
+
     if size.x == 0 and size.y == 0 then
         rct.w = crp.w
         rct.h = crp.h
