@@ -19,6 +19,7 @@ local PICO_RIGHT  = 100
 local PICO_TOP    = 0
 local PICO_MIDDLE = 50
 local PICO_BOTTOM = 100
+local SDL_ANY = -1
 
 local window, renderer
 
@@ -446,6 +447,95 @@ function pico.get_zoom()
     return S.zoom
 end
 
+local function event_from_sdl(e, xp)
+
+    if e.type == SDL.event.Quit then
+        if not S.expert then
+            os.exit(0)
+        end
+
+    elseif e.type == SDL.event.KeyDown then
+        local state = SDL.getKeyboardState()
+
+        if not state[SDL.scancode.LCtrl] and not state[SDL.scancode.RCtrl] then
+            goto skip_key
+        end
+
+        local sym = e.keysym.sym
+
+        if sym == SDL.keycode._0 then
+            pico.set.zoom({ x = 100, y = 100 })
+            pico.set.scroll({ x = 0, y = 0 })
+
+        elseif sym == SDL.keycode.Minus then
+            pico.set.zoom({
+                x = math.max(1, S.zoom.x - 10),
+                y = math.max(1, S.zoom.y - 10)
+            })
+
+        elseif sym == SDL.keycode.Equals then
+            pico.set.zoom({
+                x = S.zoom.x + 10,
+                y = S.zoom.y + 10
+            })
+
+        elseif sym == SDL.keycode.Left then
+            pico.set.scroll({
+                x = S.scroll.x - math.max(1, S.size.cur.w / 20),
+                y = S.scroll.y
+            })
+
+        elseif sym == SDL.keycode.Right then
+            pico.set.scroll({
+                x = S.scroll.x + math.max(1, S.size.cur.w / 20),
+                y = S.scroll.y
+            })
+
+        elseif sym == SDL.keycode.Up then
+            pico.set.scroll({
+                x = S.scroll.x,
+                y = S.scroll.y - math.max(1, S.size.cur.h / 20)
+            })
+
+        elseif sym == SDL.keycode.Down then
+            pico.set.scroll({
+                x = S.scroll.x,
+                y = S.scroll.y + math.max(1, S.size.cur.h / 20)
+            })
+
+        elseif sym == SDL.keycode.g then
+            pico.set.grid(not S.grid)
+        end
+
+        ::skip_key::
+    end
+
+    if xp == e.type then
+    elseif xp == SDL_ANY then
+        if not (
+            e.type == SDL.event.KeyDown or
+            e.type == SDL.event.KeyUp or
+            e.type == SDL.event.MouseButtonDown or
+            e.type == SDL.event.MouseButtonUp or
+            e.type == SDL.event.MouseMotion or
+            e.type == SDL.event.Quit
+        ) then
+            return false
+        end
+    else
+        return false
+    end
+
+    if e.type == SDL.event.MouseButtonDown
+    or e.type == SDL.event.MouseButtonUp
+    or e.type == SDL.event.MouseMotion then
+        e.x = e.x + S.scroll.x
+        e.y = e.y + S.scroll.y
+    end
+
+    return true
+end
+
 function pico.input.event(evt, type)
     while true do
         local x = SDL.waitEvent()
@@ -463,7 +553,10 @@ end
 function pico.input.delay(ms)
     while true do
         local old = SDL.getTicks()
-        SDL.waitEvent(ms)
+        local e = SDL.waitEvent(ms)
+        if e then
+            event_from_sdl(e, SDL.ANY)
+        end
         local dt = SDL.getTicks() - old
         ms = ms - dt
         if ms <= 0 then return end
