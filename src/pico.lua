@@ -552,7 +552,7 @@ function pico.input.delay(ms)
         local old = SDL.getTicks()
         local e = SDL.waitEvent(ms)
         if e then
-            event_from_sdl(e, SDL.ANY)
+            event_from_sdl(e, SDL_ANY)
         end
         local dt = SDL.getTicks() - old
         ms = ms - dt
@@ -580,7 +580,7 @@ function pico.output.draw_line(p1, p2)
     S.color.clear = { r = 0, g = 0, b = 0, a = 255 }
     output_clear()
     S.color.clear = clr
-    renderer:drawLine(p1.x-pos.x,p1.y-pos.y, p2.x-pos.x,p2.y-pos.y)
+    renderer:drawLine({x1 = p1.x-pos.x, x2 = p1.y-pos.y, y1 = p2.x-pos.x, y2 = p2.y-pos.y})
     renderer:setTarget(TEX)
     
     local anc = S.anchor.draw
