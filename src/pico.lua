@@ -135,10 +135,10 @@ local function show_grid()
     end
     renderer:setLogicalSize(S.size.cur.w, S.size.cur.h)
     renderer:setDrawColor {
-        r = S.color.draw[1],
-        g = S.color.draw[2],
-        b = S.color.draw[3],
-        a = S.color.draw[4]
+        r = S.color.draw.r,
+        g = S.color.draw.g,
+        b = S.color.draw.b,
+        a = S.color.draw.a
     }
 end
 
