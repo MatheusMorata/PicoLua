@@ -562,7 +562,7 @@ end
 
 function pico.output.draw_rect(rect)
     pos = {x = rect.x, y = rect.y}
-    aux = renderer:createTexture(SDL.pixelFormat_rgba8888, SDL.textureAccess.Target, rect.w, rect.h)
+    aux = renderer:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, rect.w, rect.h)
     aux:setBlendMode(SDL.blendMode.Blend)
     renderer:setTarget(aux)
     clr = S.color.clear
