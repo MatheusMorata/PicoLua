@@ -560,6 +560,28 @@ function pico.input.delay(ms)
     end
 end
 
+function pico.output.draw_rect(rect)
+    pos = {x = rect.x, y = rect.y}
+    aux = renderer:createTexture(SDL.pixelFormat_rgba8888, SDL.textureAccess.Target, rect.w, rect.h)
+    aux:setBlendMode(SDL.blendMode.Blend)
+    renderer:setTarget(aux)
+    clr = S.color.clear
+    S.color.clear = {r = 0, g = 0, b = 0, a = 0}
+    output_clear()
+    S.color.clear = clr
+    rect.x = 0 
+    rect.y = 0
+
+    if S.style == PICO_FILL then
+        renderer:fillRect(rect)
+    elseif S.style == PICO_STROKE then
+        renderer:draw_rect(rect)
+    end
+
+    renderer:setTarget(TEX)
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+end
+
 function pico.output.draw_line(p1, p2)
     
     local pos = {
@@ -580,7 +602,7 @@ function pico.output.draw_line(p1, p2)
     S.color.clear = { r = 0, g = 0, b = 0, a = 255 }
     output_clear()
     S.color.clear = clr
-    renderer:drawLine({x1 = p1.x-pos.x, x2 = p1.y-pos.y, y1 = p2.x-pos.x, y2 = p2.y-pos.y})
+    renderer:drawLine({x1 = p1.x-pos.x, x2 = p1.y-pos.y, y1 = p2.x-pos.x, p2.y-pos.y})
     renderer:setTarget(TEX)
     
     local anc = S.anchor.draw
