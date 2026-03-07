@@ -1,4 +1,6 @@
 local pico = dofile("../src/pico.lua")
 pico.init(true)
+pico.output.clear()
+pico.set.style(0)
 pico.output.draw_rect({x = 20, y = 20, w = 100, h = 100})
 pico.input.delay(2000)

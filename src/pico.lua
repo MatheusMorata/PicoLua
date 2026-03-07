@@ -180,11 +180,11 @@ local function output_draw_tex(pos, tex, size)
 
     elseif size.y == 0 then
         rct.h = rct.h * (size.x / rct.w)
-        rct.w = size.x
+        rct.w = size.w
 
     else
-        rct.w = size.x
-        rct.h = size.y
+        rct.w = size.w
+        rct.h = size.h
     end
 
     -- SCALE
@@ -215,14 +215,14 @@ local function output_draw_tex(pos, tex, size)
     end
 
     -- draw
-    renderer:copyEx(
-        tex,
-        crp,
-        rct,
-        angle,
-        rot,
-        flip
-    )
+    renderer:copyEx({
+        texture = tex,
+        source = crp,
+        destination = rct,
+        angle = angle,
+        center = rot,
+        flip = flip
+    })
 
     output_present(0)
 end
@@ -579,7 +579,7 @@ function pico.output.draw_rect(rect)
     end
 
     renderer:setTarget(TEX)
-    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP())
 end
 
 function pico.output.draw_line(p1, p2)
