@@ -6,9 +6,9 @@ local pico = {
     show = {}
 }
 
-local SDL   = require "SDL"
-local TTF   = require "SDL.ttf"
-local MIXER = require "SDL.mixer"
+local SDL   = require("SDL")
+local TTF   = require("SDL.ttf")
+local MIXER = require("SDL.mixer")
 
 local TEX = nil
 local title = "Titulo"
