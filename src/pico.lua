@@ -227,7 +227,7 @@ local function output_draw_tex(pos, tex, size)
     output_present(0)
 end
 
-local function set_size_internal(phy, log)
+local function set_size(phy, log)
     local KEEP = PICO_SIZE_KEEP()
     local FULL = PICO_SIZE_FULLSCREEN()
     local CUR  = PHY(window)
@@ -329,7 +329,7 @@ function pico.set.zoom(zoom)
         x = S.scroll.x - (S.size.org.x - S.size.cur.x) / 2,
         y = S.scroll.y - (S.size.org.y - S.size.cur.y) / 2
     })
-    set_size_internal(
+    set_size(
         PICO_SIZE_KEEP(),
         {
             w = S.size.org.w * 100 / zoom.x,
@@ -358,7 +358,7 @@ end
 
 function pico.set.size(phy, log)
     S.size.org = log
-    set_size_internal(phy, log)
+    set_size(phy, log)
 end
 
 function pico.set.title(t)
