@@ -14,6 +14,7 @@ for i = 0, 15 do
     pico.output.draw_pixel({x = i, y = i})
     pico.output.draw_pixel({x = 15 - i, y = i})
     pico.input.delay(100)
+    pico.output.present()
 end
 
 -- espera 1 segundo
