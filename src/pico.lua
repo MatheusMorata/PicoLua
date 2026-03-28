@@ -152,6 +152,19 @@ function pico.set.size(phy, log)
     set_size(phy, log)
 end
 
+function pico.set.color_clear(color)
+    S.color.clear = color
+end
+
+function pico.set.color_draw(color)
+    S.color.draw = color
+    REN:setDrawColor({
+        r = S.color.draw.r,
+        g = S.color.draw.g,
+        b = S.color.draw.b
+    })
+end
+
 -- OUTPUT
 function pico.output.clear()
     output_clear()
