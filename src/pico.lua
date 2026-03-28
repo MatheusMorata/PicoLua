@@ -13,13 +13,73 @@ local pico = {
 
 PICO_DIM = {}
 
-function PICO_DIM.new(x, y)
-    return { x = x, y = y }
+S = {
+    size = {
+        org = {x = 0, y = 0},
+        cur = {x = 0, y = 0}
+    }
+}
+
+local function PICO_DIM.new(w, h)
+    return { x = w, y = h }
 end
 
+local function PHY()
+    local w, h = WIN:getSize()
+    return { x = w, y = h }
+end
+
+-- VAR
 local WIN, REN
 local PICO_TITLE = 'pico-lua'
 local PICO_DIM_PHY = PICO_DIM.new(640, 360)
+local PHY = PHY()
+
+-- LOCAL FUNCTION
+local function set_size(phy, log)
+    
+    -- physical
+    if phy.x == PICO_SIZE_KEEP.x and phy.y == PICO_SIZE_KEEP.y then
+    -- keep
+    elseif phy.x == PICO_SIZE_FULLSCREEN.x and phy.y == PICO_SIZE_FULLSCREEN.y then
+        WIN:setFullscreen(SDL.window.Fullscreen)
+        phy = PHY
+
+    else
+        WIN:setFullscreen(0)
+        WIN:SetSize(phy.x, phy.y)
+    end
+
+
+    -- logical
+    if log.x == PICO_SIZE_KEEP.x and log.y == PICO_SIZE_KEEP.y then
+    -- keep
+    else
+        S.size.cur = log
+
+        TEX = REN:createTexture(
+            SDL.pixelFormat.RGBA8888,
+            SDL.textureAccess.Target,
+            S.size.cur.x,
+            S.size.cur.y
+        )
+
+        REN:setLogicalSize(S.size.cur.x, S.size.cur.y)
+    end
+    
+    if PHY.x == S.size.cur.x or PHY.y == S.size.cur.y then
+        pico.set.grid(0);
+    end
+
+    output_present(0)
+
+end
+
+-- SETTERS
+function pico.set.size(phy, log)
+    S.size.org = log
+    set_size(phy, log)
+end
 
 function pico.init(on)
     if on then
