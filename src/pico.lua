@@ -18,10 +18,18 @@ function PICO_DIM.new(w, h)
     return { x = w, y = h }
 end
 
--- GLOBAL STATE
-S = {
+-- VARS
+local WIN, REN, TEX
+local PICO_TITLE   = 'pico-lua'
+local PICO_DIM_PHY = PICO_DIM.new(640, 360)
+local PICO_DIM_LOG = PICO_DIM.new(64, 36)
+local PICO_FILL   = "fill"
+local PICO_STROKE = "stroke"
+
+local S = {
     grid = true,
     expert = false,
+    styel = PICO_FILL,
     size = {
         org = {x = 0, y = 0},
         cur = {x = 0, y = 0}
@@ -29,28 +37,19 @@ S = {
     color = {
         clear = { r = 0, g = 0, b = 0, a = 255 },
         draw  = { r = 255, g = 255, b = 255, a = 255 }
-    }
+    },
+    crop = { x = 0, y = 0, w = 0, h = 0 }
 }
 
--- VARS
-local WIN, REN
-local TEX = nil
+PICO_SIZE_KEEP = { x = 0, y = 0 }
+PICO_SIZE_FULLSCREEN = { x = 0, y = 1 }
 
-local PICO_TITLE   = 'pico-lua'
-local PICO_DIM_PHY = PICO_DIM.new(640, 360)
-local PICO_DIM_LOG = PICO_DIM.new(64, 36)
-
--- CONSTANTS (simples equivalentes)
-PICO_SIZE_KEEP = { x = -1, y = -1 }
-PICO_SIZE_FULLSCREEN = { x = -2, y = -2 }
-
--- HELPERS
 local function PHY()
     local w, h = WIN:getSize()
     return { x = w, y = h }
 end
 
--- INTERNALS
+-- LOCAL FUNCTION
 local function output_clear()
     REN:setDrawColor(S.color.clear)
     REN:clear()
@@ -141,6 +140,13 @@ local function set_size(phy, log)
     output_present(false)
 end
 
+local function output_draw_tex(pos, tex, size)
+    local rct = {x = 0, y = 0, w = 0, h = 0}
+    local format, access, rct.w, rct.h = tex:query()
+    local crp = S.crop
+    -- DESENVOLVENDO
+end
+
 -- SETTERS
 function pico.set.grid(on)
     S.grid = on
@@ -169,6 +175,25 @@ end
 function pico.output.clear()
     output_clear()
     output_present(false)
+end
+
+function pico.output.draw_rect(rect) 
+    local pos = {x = rect.x, y = rect.y}
+    local aux = REN:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, rect.w, rect.h)
+    REN:setDrawBlendMode(SDL.blendMode.Blend)
+    REN:setTarget(aux)
+    local clr = S.color.clear
+    S.color.clear = {r = 0, g = 0, b = 0}
+    output_clear()
+    rect.x = 0
+    rect.y = 0
+    if S.style == PICO_FILL then
+        REN:fillRect(rect)
+    elseif S.style == PICO_STROKE then
+        REN:drawRect(rect)
+    end
+    REN:setTarget(TEX)
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
 end
 
 -- INIT
