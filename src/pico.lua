@@ -11,8 +11,14 @@ local pico = {
     output = {},
 }
 
+-- TYPES
 PICO_DIM = {}
 
+function PICO_DIM.new(w, h)
+    return { x = w, y = h }
+end
+
+-- GLOBAL STATE
 S = {
     grid = true,
     expert = false,
@@ -21,121 +27,100 @@ S = {
         cur = {x = 0, y = 0}
     },
     color = {
-        clear = { r = 0,   g = 0,   b = 0},
-        draw  = { r = 255, g = 255, b = 255}
+        clear = { r = 0, g = 0, b = 0, a = 255 },
+        draw  = { r = 255, g = 255, b = 255, a = 255 }
     }
 }
 
-local function PICO_DIM.new(w, h)
-    return { x = w, y = h }
-end
+-- VARS
+local WIN, REN
+local TEX = nil
 
+local PICO_TITLE   = 'pico-lua'
+local PICO_DIM_PHY = PICO_DIM.new(640, 360)
+local PICO_DIM_LOG = PICO_DIM.new(64, 36)
+
+-- CONSTANTS (simples equivalentes)
+PICO_SIZE_KEEP = { x = -1, y = -1 }
+PICO_SIZE_FULLSCREEN = { x = -2, y = -2 }
+
+-- HELPERS
 local function PHY()
     local w, h = WIN:getSize()
     return { x = w, y = h }
 end
 
--- VAR
-local WIN, REN
-local TEX = nil
-local PICO_TITLE = 'pico-lua'
-local PICO_DIM_PHY = PICO_DIM.new(640, 360)
-local PICO_DIM_LOG = PICO_DIM.new(64, 36)
-local PHY = PHY()
-
--- LOCAL FUNCTION
+-- INTERNALS
 local function output_clear()
-
-    REN:setDrawColor({
-        r = S.color.clear.r,
-        g = S.color.clear.g,
-        b = S.color.clear.b
-    })
-
+    REN:setDrawColor(S.color.clear)
     REN:clear()
-
-    REN:setDrawColor({
-        r = S.color.draw.r,
-        g = S.color.draw.g,
-        b = S.color.draw.b
-    })
+    REN:setDrawColor(S.color.draw)
 end
 
 local function show_grid()
-    if not S.grid then
-        return
-    end
+    if not S.grid then return end
 
-    REN:setDrawColor({
-        r = 119,
-        g = 119,
-        b = 119
-    })
+    REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
 
-    local phy = PHY
+    local phy = PHY()
     REN:setLogicalSize(phy.x, phy.y)
 
-    local stepX = phy.x / S.size.cur.x
+    local stepX = math.max(1, math.floor(phy.x / S.size.cur.x))
     for i = 0, phy.x, stepX do
-        REN:drawLine(i, 0, i, phy.y)
+        REN:drawLine({
+            x1 = i,
+            y1 = 0,
+            x2 = i,
+            y2 = phy.y
+        })
     end
 
-    local stepY = phy.y / S.size.cur.y
-
+    local stepY = math.max(1, math.floor(phy.y / S.size.cur.y))
     for j = 0, phy.y, stepY do
-        REN:drawLine(0, j, phy.x, j)
+        REN:drawLine({
+            x1 = 0,
+            y1 = j,
+            x2 = phy.x,
+            y2 = j
+        })
     end
 
     REN:setLogicalSize(S.size.cur.x, S.size.cur.y)
-
-    REN:setDrawColor({
-        r = S.color.draw.r,
-        g = S.color.draw.g,
-        b = S.color.draw.b
-    })
+    REN:setDrawColor(S.color.draw)
 end
 
-local output_present(force)
-    if S.expert and not force then
-        return
-    end
+local function output_present(force)
+    if S.expert and not force then return end
 
     REN:setTarget(nil)
-    REN:setDrawColor({
-        r = 119,
-        g = 119,
-        b = 119
-    })
+    REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
     REN:clear()
-    REN:copy(TEX, nil, nil)
+    if TEX then
+        REN:copy(TEX, nil, nil)
+    end
     show_grid()
     REN:present()
-    REN:setDrawColor({
-        r = S.color.draw.r,
-        g = S.color.draw.g,
-        b = S.color.draw.b
-    })
+    REN:setDrawColor(S.color.draw)
     REN:setTarget(TEX)
 end
 
 local function set_size(phy, log)
-    
-    -- physical
+
+    -- PHYSICAL
     if phy.x == PICO_SIZE_KEEP.x and phy.y == PICO_SIZE_KEEP.y then
-    -- keep
+        -- keep
+
     elseif phy.x == PICO_SIZE_FULLSCREEN.x and phy.y == PICO_SIZE_FULLSCREEN.y then
-        WIN:setFullscreen(SDL.window.Fullscreen)
-        phy = PHY
+        WIN:setFullscreen(SDL.window.FullscreenDesktop)
+        phy = PHY()
 
     else
         WIN:setFullscreen(0)
-        WIN:SetSize(phy.x, phy.y)
+        WIN:setSize(phy.x, phy.y)
     end
 
-    -- logical
-    if log.x == PICO_SIZE_KEEP.x and log.y == PICO_SIZE_KEEP.y then
-    -- keep
-    else
+    -- LOGICAL
+    if not (log.x == PICO_SIZE_KEEP.x and log.y == PICO_SIZE_KEEP.y) then
         S.size.cur = log
 
         TEX = REN:createTexture(
@@ -147,18 +132,19 @@ local function set_size(phy, log)
 
         REN:setLogicalSize(S.size.cur.x, S.size.cur.y)
     end
-    
-    if PHY.x == S.size.cur.x or PHY.y == S.size.cur.y then
-        pico.set.grid(0)
+
+    local phy_now = PHY()
+    if phy_now.x == S.size.cur.x or phy_now.y == S.size.cur.y then
+        pico.set.grid(false)
     end
 
-    output_present(0)
+    output_present(false)
 end
 
 -- SETTERS
 function pico.set.grid(on)
     S.grid = on
-    output_present(o)
+    output_present(on)
 end
 
 function pico.set.size(phy, log)
@@ -167,27 +153,38 @@ function pico.set.size(phy, log)
 end
 
 -- OUTPUT
-function pico.output.clear() 
-    output_clear();
-    output_present(0);
+function pico.output.clear()
+    output_clear()
+    output_present(false)
 end
 
+-- INIT
 function pico.init(on)
     if on then
         WIN = SDL.createWindow {
             title = PICO_TITLE,
             width = PICO_DIM_PHY.x,
             height = PICO_DIM_PHY.y,
-            flags = {SDL.window.Shown}
+            flags = { SDL.window.Shown }
         }
 
-        SDL.createRenderer(WIN, -1, SDL.rendererFlags.Accelerated)
+        REN = SDL.createRenderer(WIN, -1, SDL.rendererFlags.Accelerated)
+
         REN:setDrawBlendMode(SDL.blendMode.Blend)
+
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16SYS, 2, 1024)
+
         pico.set.size(PICO_DIM_PHY, PICO_DIM_LOG)
         pico.output.clear()
+
     else
+        if TEX then TEX:destroy() end
+        if REN then REN:destroy() end
+        if WIN then WIN:destroy() end
+
+        MIXER.closeAudio()
+        TTF.quit()
         SDL.quit()
     end
 end
