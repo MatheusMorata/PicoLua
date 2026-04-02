@@ -35,7 +35,7 @@ local PICO_BOTTOM = 100
 local S = {
     grid = true,
     expert = false,
-    styel = PICO_FILL,
+    style = PICO_FILL,
     size = {
         org = {x = 0, y = 0},
         cur = {x = 0, y = 0}
