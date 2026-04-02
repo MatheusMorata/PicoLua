@@ -205,7 +205,7 @@ local function output_draw_tex(pos, tex, size)
     local rot = { x = (S.anchor.rotate.x*rct.w)/100,
                   y = (S.anchor.rotate.y*rct.h)/100}
 
-    Renderer:copyEx({
+    REN:copyEx({
         texture = tex,
         source = crp,
         destination = rct,
