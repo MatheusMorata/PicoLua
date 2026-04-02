@@ -25,6 +25,12 @@ local PICO_DIM_PHY = PICO_DIM.new(640, 360)
 local PICO_DIM_LOG = PICO_DIM.new(64, 36)
 local PICO_FILL   = "fill"
 local PICO_STROKE = "stroke"
+local PICO_LEFT  = 0
+local PICO_CENTER = 50
+local PICO_RIGHT = 100
+local PICO_TOP = 0
+local PICO_MIDDLE = 50
+local PICO_BOTTOM = 100
 
 local S = {
     grid = true,
@@ -38,7 +44,14 @@ local S = {
         clear = { r = 0, g = 0, b = 0, a = 255 },
         draw  = { r = 255, g = 255, b = 255, a = 255 }
     },
-    crop = { x = 0, y = 0, w = 0, h = 0 }
+    anchor = {
+        draw = { x = PICO_CENTER, y = PICO_MIDDLE },
+        rotate = { x = PICO_CENTER, y = PICO_MIDDLE }
+    },
+    crop = { x = 0, y = 0, w = 0, h = 0 },
+    scale = { x = 100, y = 100 },
+    scroll = { x = 0, y = 0 },
+    flip = { x = 0, y = 0 }
 }
 
 PICO_SIZE_KEEP = { x = 0, y = 0 }
@@ -47,6 +60,22 @@ PICO_SIZE_FULLSCREEN = { x = 0, y = 1 }
 local function PHY()
     local w, h = WIN:getSize()
     return { x = w, y = h }
+end
+
+function hanchor(x, w)
+    return x - (S.anchor.draw.x * w) / 100
+end
+
+function vanchor(y, h)
+    return y - (S.anchor.draw.y * h) / 100
+end
+
+local function X(v, w)
+    return hanchor(v, w) - S.scroll.x
+end
+
+local function Y(v, h)
+    return vanchor(v, h) - S.scroll.y
 end
 
 -- LOCAL FUNCTION
@@ -144,7 +173,50 @@ local function output_draw_tex(pos, tex, size)
     local rct = {x = 0, y = 0, w = 0, h = 0}
     local format, access, rct.w, rct.h = tex:query()
     local crp = S.crop
-    -- DESENVOLVENDO
+    
+    if S.crop.w == 0 then
+        crp.w = rct.w
+    end
+
+    if S.crop.h == 0 then
+        crp.h = rct.h
+    end
+
+    if size.x == 0 and size.y == 0 then
+        rct.w = crp.w
+        rct.h = crp.h
+    elseif size.x == 0 then
+        rct.w = rct.w * (size.y / rct.h)
+        rct.h = size.y
+    elseif size.y == 0 then
+        rct.h = rct.h * (size.x / rct.w);
+        rct.w = size.x;
+    else 
+        rct.w = size.x;
+        rct.h = size.y;
+    end
+
+    rct.w = (S.scale.x*rct.w)/100
+    rct.h = (S.scale.y*rct.h)/100
+
+    rct.x = X(pos.x, rct.w)
+    rct.y = Y(pos.y, rct.h)
+
+    local rot = { x = (S.anchor.rotate.x*rct.w)/100,
+                  y = (S.anchor.rotate.y*rct.h)/100}
+
+    Renderer:copyEx({
+        texture = tex,
+        source = crp,
+        destination = rct,
+        angle = S.angle + ((S.flip.x and S.flip.y) and 180 or 0),
+        center = rot,
+        flip =
+            S.flip.y and SDL.rendererFlip.Vertical or
+            (S.flip.x and SDL.rendererFlip.Horizontal or SDL.rendererFlip.None)
+    })
+
+    output_present(false)
 end
 
 -- SETTERS
