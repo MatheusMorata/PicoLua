@@ -36,6 +36,7 @@ local S = {
     grid = true,
     expert = false,
     style = PICO_FILL,
+    angle = 0,
     size = {
         org = {x = 0, y = 0},
         cur = {x = 0, y = 0}
@@ -171,7 +172,9 @@ end
 
 local function output_draw_tex(pos, tex, size)
     local rct = {x = 0, y = 0, w = 0, h = 0}
-    local format, access, rct.w, rct.h = tex:query()
+    local format, access, w, h = tex:query()
+    rct.w = w
+    rct.h = h
     local crp = S.crop
     
     if S.crop.w == 0 then
