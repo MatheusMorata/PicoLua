@@ -280,6 +280,7 @@ function event_from_sdl(e, xp)
 
         elseif key == SDL.K_g then
             pico.set.grid(not S.grid)
+        end
     end
 
     if xp == e.type then
@@ -313,10 +314,11 @@ end
 function pico.input.delay(ms)
     while true do
         local old = SDL.getTicks()
-        local has = SDL.waitEventTimeout(ms)
+        local e = SDL.Event()
+        local has = SDL.waitEventTimeout(e, ms)
 
         if has then
-            event_from_sdl(has, SDL.ANY)
+            event_from_sdl(e, SDL.ANY)
         end
 
         local dt = SDL.getTicks() - old
@@ -405,7 +407,7 @@ end
 
 function pico.output.draw_pixel(pos)
     REN:drawPoint({x = X(pos.x, 1),  y = Y(pos.y, 1)})
-    output_present(0)
+    output_present(false)
 end
 
 -- INIT
