@@ -271,6 +271,11 @@ function pico.output.draw_rect(rect)
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
 end
 
+function pico.output.draw_pixel(pos)
+    REN:drawPoint({x = X(pos.x, 1),  y = Y(pos.y, 1)})
+    output_present(0)
+end
+
 -- INIT
 function pico.init(on)
     if on then
