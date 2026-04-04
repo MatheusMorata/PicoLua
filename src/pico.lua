@@ -312,21 +312,16 @@ end
 
 -- INPUT
 function pico.input.delay(ms)
-    while true do
-        local old = SDL.getTicks()
-        local e = SDL.Event()
-        local has = SDL.waitEventTimeout(e, ms)
+    output_present(true)
 
-        if has then
+    local start = SDL.getTicks()
+
+    while SDL.getTicks() - start < ms do
+        for e in SDL.pollEvent() do
             event_from_sdl(e, SDL.ANY)
         end
 
-        local dt = SDL.getTicks() - old
-        ms = ms - dt
-
-        if ms <= 0 then
-            return
-        end
+        SDL.delay(1)
     end
 end
 
@@ -431,10 +426,6 @@ function pico.init(on)
         pico.output.clear()
 
     else
-        if TEX then TEX:destroy() end
-        if REN then REN:destroy() end
-        if WIN then WIN:destroy() end
-
         MIXER.closeAudio()
         TTF.quit()
         SDL.quit()
