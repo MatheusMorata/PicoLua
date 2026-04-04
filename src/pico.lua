@@ -222,6 +222,25 @@ local function output_draw_tex(pos, tex, size)
     output_present(false)
 end
 
+-- INPUT
+function pico.input.delay(ms)
+    while true do
+        local old = SDL.getTicks()
+        local has = SDL.waitEventTimeout(ms)
+
+        if has then
+            event_from_sdl(e, SDL.ANY)
+        end
+
+        local dt = SDL.getTicks() - old
+        ms = ms - dt
+
+        if ms <= 0 then
+            return
+        end
+    end
+end
+
 -- SETTERS
 function pico.set.grid(on)
     S.grid = on
