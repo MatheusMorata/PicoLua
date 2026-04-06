@@ -1,6 +1,7 @@
 -- IMPORTS
 local SDL   = require "SDL"
 local TTF   = require "SDL.ttf"
+local IMG   = require "SDL.image"
 local MIXER = require "SDL.mixer"
  
 -- TABLES
@@ -86,6 +87,50 @@ local function output_clear()
     REN:setDrawColor(S.color.clear)
     REN:clear()
     REN:setDrawColor(S.color.draw)
+end
+
+local function output_draw_tex(pos, tex, size)
+    local rct = {x = 0, y = 0, w = 0, h = 0}
+    _, _, rct.w, rct.h = tex:query()
+    local crp = S.crop
+    if S.crop.w == 0 then
+        crp.w = rct.w
+    end
+    if S.crop.h == 0 then
+        crp.h = rct.h
+    end
+    if size.x == 0 and size.y == 0 then
+        rct.w = crp.w
+        rct.h = crp.h
+    elseif size.x == 0 then
+        rct.w = rct.w * (size.y / rct.h)
+        rct.h = size.y
+    elseif size.y == 0 then
+        rct.h = rct.h * (size.x / rct.w)
+        rct.w = size.x
+    else
+        rct.w = size.x
+        rct.h = size.y
+    end
+
+    rct.w = (S.scale.x*rct.w)/100
+    rct.h = (S.scale.y*rct.h)/100
+
+    rct.x = X(pos.x, rct.w);
+    rct.y = Y(pos.y, rct.h);
+
+    local rot = rot = {
+        w = (S.anchor.rotate.x*rct.w)/100,
+        h = (S.anchor.rotate.y*rct.h)/100
+    };
+
+    REN:copyEx{
+        texture = texture,
+        source  = { x = 0, y = 0, w = 10, h = 20 },
+        flip    = SDL.rendererFlip.Horizontal
+    }
+
+    output_present(false)
 end
  
 local function show_grid()
@@ -374,12 +419,21 @@ function pico.set.color_draw(color)
 end
  
 -- OUTPUT
- 
+
 function pico.output.clear()
     output_clear()
     output_present(false)
 end
- 
+
+function pico.output.draw_image_ext(pos, path, size)
+    local tex = IMG.load(path)
+    output_draw_tex(pos, tex, size)
+end
+
+function pico.output.draw_image(pos, path)
+    pico.output.draw_image_ext(pos, pas, PICO_SIZE_KEEP)
+end
+
 function pico.output.draw_rect(rect)
     local pos = {x = rect.x, y = rect.y}
     local aux = REN:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, rect.w, rect.h)
