@@ -88,56 +88,12 @@ local function output_clear()
     REN:clear()
     REN:setDrawColor(S.color.draw)
 end
-
-local function output_draw_tex(pos, tex, size)
-    local rct = {x = 0, y = 0, w = 0, h = 0}
-    _, _, rct.w, rct.h = tex:query()
-    local crp = S.crop
-    if S.crop.w == 0 then
-        crp.w = rct.w
-    end
-    if S.crop.h == 0 then
-        crp.h = rct.h
-    end
-    if size.x == 0 and size.y == 0 then
-        rct.w = crp.w
-        rct.h = crp.h
-    elseif size.x == 0 then
-        rct.w = rct.w * (size.y / rct.h)
-        rct.h = size.y
-    elseif size.y == 0 then
-        rct.h = rct.h * (size.x / rct.w)
-        rct.w = size.x
-    else
-        rct.w = size.x
-        rct.h = size.y
-    end
-
-    rct.w = (S.scale.x*rct.w)/100
-    rct.h = (S.scale.y*rct.h)/100
-
-    rct.x = X(pos.x, rct.w);
-    rct.y = Y(pos.y, rct.h);
-
-    local rot = rot = {
-        w = (S.anchor.rotate.x*rct.w)/100,
-        h = (S.anchor.rotate.y*rct.h)/100
-    };
-
-    REN:copyEx{
-        texture = texture,
-        source  = { x = 0, y = 0, w = 10, h = 20 },
-        flip    = SDL.rendererFlip.Horizontal
-    }
-
-    output_present(false)
-end
  
 local function show_grid()
     if not S.grid then return end
  
     REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
- 
+
     local phy = PHY()
     REN:setLogicalSize(phy.x, phy.y)
  
@@ -176,6 +132,50 @@ local function output_present(force)
     REN:setTarget(TEX)
 end
  
+local function output_draw_tex(pos, tex, size)
+    local rct = {x = 0, y = 0, w = 0, h = 0}
+    _, _, rct.w, rct.h = tex:query()
+    local crp = S.crop
+    if S.crop.w == 0 then
+        crp.w = rct.w
+    end
+    if S.crop.h == 0 then
+        crp.h = rct.h
+    end
+    if size.x == 0 and size.y == 0 then
+        rct.w = crp.w
+        rct.h = crp.h
+    elseif size.x == 0 then
+        rct.w = rct.w * (size.y / rct.h)
+        rct.h = size.y
+    elseif size.y == 0 then
+        rct.h = rct.h * (size.x / rct.w)
+        rct.w = size.x
+    else
+        rct.w = size.x
+        rct.h = size.y
+    end
+
+    rct.w = (S.scale.x*rct.w)/100
+    rct.h = (S.scale.y*rct.h)/100
+
+    rct.x = X(pos.x, rct.w);
+    rct.y = Y(pos.y, rct.h);
+
+    local rot =  {
+        w = (S.anchor.rotate.x*rct.w)/100,
+        h = (S.anchor.rotate.y*rct.h)/100
+    }
+
+    REN:copyEx{
+        texture = tex,
+        source  = { x = 0, y = 0, w = 10, h = 20 },
+        flip    = SDL.rendererFlip.Horizontal
+    }
+
+    output_present(false)
+end
+
 local function set_size(phy, log)
     -- PHYSICAL
     if phy.x == PICO_SIZE_KEEP.x and phy.y == PICO_SIZE_KEEP.y then
@@ -211,60 +211,7 @@ local function set_size(phy, log)
  
     output_present(false)
 end
- 
-local function output_draw_tex(pos, tex, size)
-    local rct = {x = 0, y = 0, w = 0, h = 0}
-    local format, access, w, h = tex:query()
-    rct.w = w
-    rct.h = h
-    local crp = S.crop
- 
-    if S.crop.w == 0 then
-        crp.w = rct.w
-    end
-    if S.crop.h == 0 then
-        crp.h = rct.h
-    end
- 
-    if size.x == 0 and size.y == 0 then
-        rct.w = crp.w
-        rct.h = crp.h
-    elseif size.x == 0 then
-        rct.w = rct.w * (size.y / rct.h)
-        rct.h = size.y
-    elseif size.y == 0 then
-        rct.h = rct.h * (size.x / rct.w)
-        rct.w = size.x
-    else
-        rct.w = size.x
-        rct.h = size.y
-    end
- 
-    rct.w = (S.scale.x * rct.w) / 100
-    rct.h = (S.scale.y * rct.h) / 100
- 
-    rct.x = X(pos.x, rct.w)
-    rct.y = Y(pos.y, rct.h)
- 
-    local rot = {
-        x = (S.anchor.rotate.x * rct.w) / 100,
-        y = (S.anchor.rotate.y * rct.h) / 100
-    }
- 
-    REN:copyEx({
-        texture = tex,
-        source = crp,
-        destination = rct,
-        angle = S.angle + ((S.flip.x and S.flip.y) and 180 or 0),
-        center = rot,
-        flip =
-            S.flip.y and SDL.rendererFlip.Vertical or
-            (S.flip.x and SDL.rendererFlip.Horizontal or SDL.rendererFlip.None)
-    })
- 
-    output_present(false)
-end
- 
+  
 function event_from_sdl(e, xp)
     if e.type == SDL.QUIT then
         if not S.expert then
@@ -426,12 +373,13 @@ function pico.output.clear()
 end
 
 function pico.output.draw_image_ext(pos, path, size)
-    local tex = IMG.load(path)
+    local surface = IMG.load(path)
+    local tex = REN:createTextureFromSurface(surface)
     output_draw_tex(pos, tex, size)
 end
 
 function pico.output.draw_image(pos, path)
-    pico.output.draw_image_ext(pos, pas, PICO_SIZE_KEEP)
+    pico.output.draw_image_ext(pos, path, PICO_SIZE_KEEP)
 end
 
 function pico.output.draw_rect(rect)
