@@ -83,6 +83,45 @@ end
  
 -- LOCAL FUNCTIONS
  
+local function draw_polygon_stroke(ax, ay)
+    local n = #ax
+    for i = 1, n do
+        local j = (i % n) + 1
+        REN:drawLine({
+            x1 = ax[i], y1 = ay[i],
+            x2 = ax[j], y2 = ay[j]
+        })
+    end
+end
+
+local function draw_polygon_fill(ax, ay)
+    local n = #ax
+    local miny, maxy = math.maxinteger, math.mininteger
+    for i = 1, n do
+        miny = math.min(miny, ay[i])
+        maxy = math.max(maxy, ay[i])
+    end
+
+    for y = miny, maxy do
+        local intersections = {}
+        for i = 1, n do
+            local j = (i % n) + 1
+            local yi, yj = ay[i], ay[j]
+            if (yi <= y and yj > y) or (yj <= y and yi > y) then
+                local t = (y - yi) / (yj - yi)
+                table.insert(intersections, ax[i] + t * (ax[j] - ax[i]))
+            end
+        end
+        table.sort(intersections)
+        for i = 1, #intersections - 1, 2 do
+            REN:drawLine({
+                x1 = math.floor(intersections[i]),   y1 = y,
+                x2 = math.floor(intersections[i+1]), y2 = y
+            })
+        end
+    end
+end
+
 local function output_clear()
     REN:setDrawColor(S.color.clear)
     REN:clear()
@@ -315,7 +354,11 @@ function pico.input.delay(ms)
 end
  
 -- SETTERS
- 
+
+function pico.set.style(style)
+    S.style = style
+end 
+
 function pico.set.scroll(pos)
     S.scroll = pos
 end
@@ -446,6 +489,56 @@ function pico.output.draw_pixels(apos)
     end
     REN:drawPoints(vec)
     output_present(false)
+end
+
+function pico.output.draw_poly(apos)
+    local minx, maxx = math.maxinteger, math.mininteger
+    local miny, maxy = math.maxinteger, math.mininteger
+
+    for _, p in ipairs(apos) do
+        minx = math.min(p.x, minx)
+        maxx = math.max(p.x, maxx)
+        miny = math.min(p.y, miny)
+        maxy = math.max(p.y, maxy)
+    end
+
+    local ax, ay = {}, {}
+    for i, p in ipairs(apos) do
+        ax[i] = p.x - minx
+        ay[i] = p.y - miny
+    end
+
+    local pos = {
+        x = hanchor(minx, 1),
+        y = vanchor(miny, 1)
+    }
+
+    local aux = REN:createTexture(
+        SDL.pixelFormat.RGBA8888,
+        SDL.textureAccess.Target,
+        maxx - minx + 1,
+        maxy - miny + 1
+    )
+    aux:setBlendMode(SDL.blendMode.Blend)
+    REN:setTarget(aux)
+
+    local clr = S.color.clear
+    S.color.clear = { r = 0, g = 0, b = 0, a = 0 }
+    output_clear()
+    S.color.clear = clr
+
+    local c = S.color.draw
+    if S.style == PICO_FILL then
+        draw_polygon_fill(ax, ay)
+    elseif S.style == PICO_STROKE then
+        draw_polygon_stroke(ax, ay)
+    end
+
+    REN:setTarget(TEX)
+    local anc = S.anchor.draw
+    S.anchor.draw = { x = PICO_LEFT, y = PICO_TOP }
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+    S.anchor.draw = anc
 end
 
 -- INIT
