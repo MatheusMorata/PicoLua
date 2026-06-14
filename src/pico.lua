@@ -366,6 +366,33 @@ function pico.set.color_draw(color)
 end
  
 -- OUTPUT
+function pico.output.draw_line(p1, p2)
+    local pos = {
+        x = hanchor(math.min(p1.x, p2.x), 1),
+        y = vanchor(math.min(p1.y, p2.y), 1)
+    }
+    local aux = REN:createTexture(
+        SDL.pixelFormat.RGBA8888,
+        SDL.textureAccess.Target,
+        math.abs(p1.x - p2.x) + 1,
+        math.abs(p1.y - p2.y) + 1
+    )
+    REN:setTextureBlendMode(aux, SDL.blendMode.Blend)
+    REN:setTarget(aux)
+    local clr = S.color.clear
+    S.color.clear = { r = 0, g = 0, b = 0, a = 0 }
+    output_clear()
+    S.color.clear = clr
+    REN:drawLine({
+        x1 = p1.x - pos.x, y1 = p1.y - pos.y,
+        x2 = p2.x - pos.x, y2 = p2.y - pos.y
+    })
+    REN:setTarget(TEX)
+    local anc = S.anchor.draw
+    S.anchor.draw = { x = PICO_LEFT, y = PICO_TOP }
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+    S.anchor.draw = anc
+end
 
 function pico.output.clear()
     output_clear()
