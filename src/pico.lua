@@ -377,7 +377,7 @@ function pico.output.draw_line(p1, p2)
         math.abs(p1.x - p2.x) + 1,
         math.abs(p1.y - p2.y) + 1
     )
-    REN:setTextureBlendMode(aux, SDL.blendMode.Blend)
+    aux:setBlendMode(SDL.blendMode.Blend)
     REN:setTarget(aux)
     local clr = S.color.clear
     S.color.clear = { r = 0, g = 0, b = 0, a = 0 }
