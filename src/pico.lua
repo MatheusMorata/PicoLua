@@ -436,6 +436,18 @@ function pico.output.draw_pixel(pos)
     output_present(false)
 end
  
+function pico.output.draw_pixels(apos)
+    local vec = {}
+    for i, pos in ipairs(apos) do
+        vec[i] = {
+            x = math.floor(X(pos.x, 1)),
+            y = math.floor(Y(pos.y, 1))
+        }
+    end
+    REN:drawPoints(vec)
+    output_present(false)
+end
+
 -- INIT
  
 function pico.init(on)
