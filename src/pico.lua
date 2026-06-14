@@ -38,6 +38,10 @@ local S = {
     expert = false,
     style = PICO_FILL,
     angle = 0,
+    font = {
+        ttf = nil,
+        h = 0
+    },
     size = {
         org = {x = 0, y = 0},
         cur = {x = 0, y = 0}
@@ -354,6 +358,13 @@ function pico.input.delay(ms)
 end
  
 -- SETTERS
+function pico.set.anchor_draw(anchor)
+    S.anchor.draw = anchor
+end
+
+function pico.set.anchor_rotate(anchor)
+    S.anchor.rotate = anchor
+end
 
 function pico.set.style(style)
     S.style = style
