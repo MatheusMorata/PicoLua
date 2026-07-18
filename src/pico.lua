@@ -653,7 +653,7 @@ end
 
 function pico.get.show()
     local flags = WIN:getFlags()
-    return (flags & SDL.window.Shown) ~= 0
+    return flags.Shown
 end
 
 function pico.get.style()
