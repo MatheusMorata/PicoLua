@@ -34,31 +34,90 @@ local PICO_MIDDLE = 50
 local PICO_BOTTOM = 100
  
 local S = {
-    grid = true,
+    anchor = {
+        draw = {
+            x = PICO_CENTER,
+            y = PICO_MIDDLE
+        },
+        rotate = {
+            x = PICO_CENTER,
+            y = PICO_MIDDLE
+        }
+    },
+
+    color = {
+        clear = {
+            r = 0,
+            g = 0,
+            b = 0,
+            a = 255
+        },
+        draw = {
+            r = 255,
+            g = 255,
+            b = 255,
+            a = 255
+        }
+    },
+
+    cursor = {
+        x = 0,
+        cur = {
+            x = 0,
+            y = 0
+        }
+    },
+
     expert = false,
-    style = PICO_FILL,
-    angle = 0,
+
     font = {
         ttf = nil,
         h = 0
     },
+
+    grid = true,
+
+    crop = {
+        x = 0,
+        y = 0,
+        w = 0,
+        h = 0
+    },
+
+    scroll = {
+        x = 0,
+        y = 0
+    },
+
     size = {
-        org = {x = 0, y = 0},
-        cur = {x = 0, y = 0}
+        org = {
+            x = 0,
+            y = 0
+        },
+        cur = {
+            x = 0,
+            y = 0
+        }
     },
-    color = {
-        clear = { r = 0, g = 0, b = 0, a = 255 },
-        draw  = { r = 255, g = 255, b = 255, a = 255 }
+
+    style = PICO_FILL,
+
+    flip = {
+        x = 0,
+        y = 0
     },
-    anchor = {
-        draw = { x = PICO_CENTER, y = PICO_MIDDLE },
-        rotate = { x = PICO_CENTER, y = PICO_MIDDLE }
+
+    angle = 0,
+
+    zoom = {
+        x = 100,
+        y = 100
     },
-    crop = { x = 0, y = 0, w = 0, h = 0 },
-    scale = { x = 100, y = 100 },
-    scroll = { x = 0, y = 0 },
-    flip = { x = 0, y = 0 },
-    zoom = { x = 0, y = 0}
+
+    scale = {
+        x = 100,
+        y = 100
+    }
 }
  
 PICO_SIZE_KEEP = { x = 0, y = 0 }
@@ -366,56 +425,131 @@ function pico.set.anchor_rotate(anchor)
     S.anchor.rotate = anchor
 end
 
+function pico.set.color_clear(color)
+    S.color.clear = color
+end
+
+function pico.set.color_draw(color)
+    S.color.draw = color
+
+    REN:setDrawColor({
+        r = color.r,
+        g = color.g,
+        b = color.b,
+        a = color.a or 255
+    })
+end
+
+function pico.set.crop(rect)
+    S.crop = {
+        x = rect.x or 0,
+        y = rect.y or 0,
+        w = rect.w or 0,
+        h = rect.h or 0
+    }
+end
+
+function pico.set.cursor(pos)
+    S.cursor.cur = {
+        x = pos.x,
+        y = pos.y
+    }
+end
+
+function pico.set.expert(on)
+    S.expert = on
+end
+
+function pico.set.flip(flip)
+    S.flip = {
+        x = flip.x or 0,
+        y = flip.y or 0
+    }
+end
+
+function pico.set.font(path, ptsize)
+    if S.font.ttf then
+        S.font.ttf:close()
+    end
+
+    ptsize = ptsize or 16
+
+    S.font.ttf = TTF.open(path, ptsize)
+    S.font.h = ptsize
+end
+
+function pico.set.grid(on)
+    S.grid = on
+    output_present(true)
+end
+
+function pico.set.rotate(angle)
+    S.angle = angle or 0
+end
+
+function pico.set.scale(scale)
+    S.scale = {
+        x = scale.x or 100,
+        y = scale.y or 100
+    }
+end
+
+function pico.set.scroll(scroll)
+    S.scroll = {
+        x = scroll.x or 0,
+        y = scroll.y or 0
+    }
+end
+
+function pico.set.show(show)
+    if show then
+        WIN:show()
+    else
+        WIN:hide()
+    end
+end
+
+function pico.set.size(phy, log)
+    S.size.org = {
+        x = log.x,
+        y = log.y
+    }
+
+    set_size(phy, log)
+end
+
 function pico.set.style(style)
     S.style = style
-end 
-
-function pico.set.scroll(pos)
-    S.scroll = pos
 end
- 
+
+function pico.set.title(title)
+    PICO_TITLE = title
+    WIN:setTitle(title)
+end
+
 function pico.set.zoom(zoom)
-    S.zoom = zoom
- 
+
+    S.zoom = {
+        x = zoom.x or 100,
+        y = zoom.y or 100
+    }
+
     pico.set.scroll({
         x = S.scroll.x - (S.size.org.x - S.size.cur.x) / 2,
         y = S.scroll.y - (S.size.org.y - S.size.cur.y) / 2
     })
- 
+
     set_size(
         PICO_SIZE_KEEP,
         {
-            x = S.size.org.x * 100 / zoom.x,
-            y = S.size.org.y * 100 / zoom.y
+            x = S.size.org.x * 100 / S.zoom.x,
+            y = S.size.org.y * 100 / S.zoom.y
         }
     )
- 
+
     pico.set.scroll({
         x = S.scroll.x + (S.size.org.x - S.size.cur.x) / 2,
         y = S.scroll.y + (S.size.org.y - S.size.cur.y) / 2
-    })
-end
- 
-function pico.set.grid(on)
-    S.grid = on
-    output_present(on)
-end
- 
-function pico.set.size(phy, log)
-    S.size.org = log
-    set_size(phy, log)
-end
- 
-function pico.set.color_clear(color)
-    S.color.clear = color
-end
- 
-function pico.set.color_draw(color)
-    S.color.draw = color
-    REN:setDrawColor({
-        r = S.color.draw.r,
-        g = S.color.draw.g,
-        b = S.color.draw.b
     })
 end
 
