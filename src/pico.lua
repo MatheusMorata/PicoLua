@@ -600,8 +600,11 @@ function pico.get.key(scancode)
 end
 
 function pico.get.mouse()
-    local x, y = SDL.getMouseState()
-    return { x = x, y = y }
+    local _, x, y = SDL.getMouseState()
+    return {
+        x = x,
+        y = y
+    }
 end
 
 function pico.get.crop()
