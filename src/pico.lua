@@ -652,7 +652,8 @@ function pico.get.size_text(text)
 end
 
 function pico.get.show()
-    return WIN:getFlags().shown
+    local flags = WIN:getFlags()
+    return (flags & SDL.window.Shown) ~= 0
 end
 
 function pico.get.style()
