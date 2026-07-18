@@ -418,6 +418,121 @@ function pico.set.color_draw(color)
         b = S.color.draw.b
     })
 end
+
+-- GETTERS
+
+function pico.get.anchor_draw()
+    return S.anchor.draw
+end
+
+function pico.get.anchor_rotate()
+    return S.anchor.rotate
+end
+
+function pico.get.color_clear()
+    return S.color.clear
+end
+
+function pico.get.color_draw()
+    return S.color.draw
+end
+
+function pico.get.cursor()
+    return S.cursor.cur
+end
+
+function pico.get.expert()
+    return S.expert
+end
+
+function pico.get.flip()
+    return S.flip
+end
+
+function pico.get.font()
+    if S.font.ttf then
+        return S.font.ttf:faceFamilyName()
+    end
+    return nil
+end
+
+function pico.get.grid()
+    return S.grid
+end
+
+function pico.get.key(scancode)
+    local state = SDL.getKeyboardState()
+    return state[scancode]
+end
+
+function pico.get.mouse()
+    local x, y = SDL.getMouseState()
+    return { x = x, y = y }
+end
+
+function pico.get.crop()
+    return S.crop
+end
+
+function pico.get.rotate()
+    return S.angle
+end
+
+function pico.get.scale()
+    return S.scale
+end
+
+function pico.get.scroll()
+    return S.scroll
+end
+
+function pico.get.size()
+    return {
+        phy = PHY(),
+        log = S.size.org
+    }
+end
+
+function pico.get.size_image(path)
+    local surface = IMG.load(path)
+    if not surface then
+        error("Unable to load image: "..path)
+    end
+
+    local w, h = surface.w, surface.h
+    surface:free()
+
+    return { x = w, y = h }
+end
+
+function pico.get.size_text(text)
+    if text == "" then
+        return { x = 0, y = 0 }
+    end
+
+    local w, h = S.font.ttf:sizeText(text)
+    return { x = w, y = h }
+end
+
+function pico.get.show()
+    return WIN:getFlags().shown
+end
+
+function pico.get.style()
+    return S.style
+end
+
+function pico.get.ticks()
+    return SDL.getTicks()
+end
+
+function pico.get.title()
+    return WIN:getTitle()
+end
+
+function pico.get.zoom()
+    return S.zoom
+end
  
 -- OUTPUT
 function pico.output.draw_line(p1, p2)
@@ -465,22 +580,44 @@ end
 
 function pico.output.draw_rect(rect)
     local pos = {x = rect.x, y = rect.y}
-    local aux = REN:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, rect.w, rect.h)
-    REN:setDrawBlendMode(SDL.blendMode.Blend)
+
+    local aux = REN:createTexture(
+        SDL.pixelFormat.RGBA8888,
+        SDL.textureAccess.Target,
+        rect.w,
+        rect.h
+    )
+
+    aux:setBlendMode(SDL.blendMode.Blend)
+
     REN:setTarget(aux)
+
     local clr = S.color.clear
-    S.color.clear = {r = 0, g = 0, b = 0}
+    S.color.clear = {
+        r = 0,
+        g = 0,
+        b = 0,
+        a = 0
+    }
+
     output_clear()
+
     S.color.clear = clr
+
     rect.x = 0
     rect.y = 0
+
     if S.style == PICO_FILL then
         REN:fillRect(rect)
     elseif S.style == PICO_STROKE then
         REN:drawRect(rect)
     end
+
     REN:setTarget(TEX)
+
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+
+    aux:destroy()
 end
  
 function pico.output.draw_pixel(pos)
