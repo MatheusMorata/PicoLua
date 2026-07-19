@@ -1,24 +1,44 @@
+-- pico.lua
 -- IMPORTS
 local SDL   = require "SDL"
 local TTF   = require "SDL.ttf"
 local IMG   = require "SDL.image"
 local MIXER = require "SDL.mixer"
- 
+
+-- Torna SDL global para uso externo
+_G.SDL = SDL
+
 -- TABLES
 local pico = {
     set   = {},
     get   = {},
     input = {},
     output = {},
+    pos   = nil,  -- Será definido depois
 }
- 
+
 -- TYPES
 PICO_DIM = {}
- 
+
 function PICO_DIM.new(w, h)
     return { x = w, y = h }
 end
- 
+
+local event = {
+    type = 0,
+
+    key = {
+        keysym = {
+            scancode = 0
+        }
+    },
+
+    button = {
+        x = 0,
+        y = 0
+    }
+}
+
 -- VARS
 local WIN, REN, TEX
 local PICO_TITLE   = 'pico-lua'
@@ -32,7 +52,17 @@ local PICO_RIGHT = 100
 local PICO_TOP = 0
 local PICO_MIDDLE = 50
 local PICO_BOTTOM = 100
- 
+
+-- Exporta constantes para uso externo
+pico.POS_LEFT = PICO_LEFT
+pico.POS_CENTER = PICO_CENTER
+pico.POS_RIGHT = PICO_RIGHT
+pico.POS_TOP = PICO_TOP
+pico.POS_MIDDLE = PICO_MIDDLE
+pico.POS_BOTTOM = PICO_BOTTOM
+pico.DRAW_FILL = PICO_FILL
+pico.DRAW_STROKE = PICO_STROKE
+
 local S = {
     anchor = {
         draw = {
@@ -119,33 +149,56 @@ local S = {
         y = 100
     }
 }
- 
-PICO_SIZE_KEEP = { x = 0, y = 0 }
+
+PICO_SIZE_KEEP = { x = -1, y = -1 }
 PICO_SIZE_FULLSCREEN = { x = 0, y = 1 }
- 
+
+-- ============================================
+-- FUNÇÃO POS (estilo Python)
+-- ============================================
+
+--- Calcula uma posição no mundo lógico com base em percentagens.
+--- @param pct table: (x, y) percentagens (0-100) da largura e altura do mundo.
+--- @param offset table: (x, y) deslocamento em pixels a ser adicionado à posição calculada. (opcional, padrão {0, 0})
+--- @return x, y: coordenadas no mundo lógico.
+function pico.pos(pct, offset)
+    offset = offset or {0, 0}
+    local world_w = S.size.org.x or 64
+    local world_h = S.size.org.y or 36
+    
+    local x = math.floor((world_w * pct[1]) / 100) + offset[1]
+    local y = math.floor((world_h * pct[2]) / 100) + offset[2]
+    
+    return x, y
+end
+
+-- ============================================
+-- FUNÇÕES AUXILIARES
+-- ============================================
+
 local function PHY()
     local w, h = WIN:getSize()
     return { x = w, y = h }
 end
- 
+
 function hanchor(x, w)
     return x - (S.anchor.draw.x * w) / 100
 end
- 
+
 function vanchor(y, h)
     return y - (S.anchor.draw.y * h) / 100
 end
- 
+
 local function X(v, w)
     return hanchor(v, w) - S.scroll.x
 end
- 
+
 local function Y(v, h)
     return vanchor(v, h) - S.scroll.y
 end
- 
+
 -- LOCAL FUNCTIONS
- 
+
 local function draw_polygon_stroke(ax, ay)
     local n = #ax
     for i = 1, n do
@@ -190,15 +243,15 @@ local function output_clear()
     REN:clear()
     REN:setDrawColor(S.color.draw)
 end
- 
+
 local function show_grid()
     if not S.grid then return end
- 
+
     REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
 
     local phy = PHY()
     REN:setLogicalSize(phy.x, phy.y)
- 
+
     local stepX = math.max(1, math.floor(phy.x / S.size.cur.x))
     for i = 0, phy.x, stepX do
         REN:drawLine({
@@ -206,7 +259,7 @@ local function show_grid()
             x2 = i, y2 = phy.y
         })
     end
- 
+
     local stepY = math.max(1, math.floor(phy.y / S.size.cur.y))
     for j = 0, phy.y, stepY do
         REN:drawLine({
@@ -214,14 +267,14 @@ local function show_grid()
             x2 = phy.x, y2 = j
         })
     end
- 
+
     REN:setLogicalSize(S.size.cur.x, S.size.cur.y)
     REN:setDrawColor(S.color.draw)
 end
- 
+
 local function output_present(force)
     if S.expert and not force then return end
- 
+
     REN:setTarget()
     REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
     REN:clear()
@@ -233,7 +286,7 @@ local function output_present(force)
     REN:setDrawColor(S.color.draw)
     REN:setTarget(TEX)
 end
- 
+
 local function output_draw_tex(pos, tex, size)
     local _, _, tw, th = tex:query()
 
@@ -324,38 +377,42 @@ local function set_size(phy, log)
     -- PHYSICAL
     if phy.x == PICO_SIZE_KEEP.x and phy.y == PICO_SIZE_KEEP.y then
         -- keep
- 
+
     elseif phy.x == PICO_SIZE_FULLSCREEN.x and phy.y == PICO_SIZE_FULLSCREEN.y then
         WIN:setFullscreen(SDL.window.FullscreenDesktop)
         phy = PHY()
- 
+
     else
         WIN:setFullscreen(0)
         WIN:setSize(phy.x, phy.y)
     end
- 
+
     -- LOGICAL
     if not (log.x == PICO_SIZE_KEEP.x and log.y == PICO_SIZE_KEEP.y) then
         S.size.cur = log
- 
+
+        if TEX then
+            TEX:destroy()
+        end
+
         TEX = REN:createTexture(
             SDL.pixelFormat.RGBA8888,
             SDL.textureAccess.Target,
             S.size.cur.x,
             S.size.cur.y
         )
- 
+
         REN:setLogicalSize(S.size.cur.x, S.size.cur.y)
     end
- 
+
     local phy_now = PHY()
     if phy_now.x == S.size.cur.x or phy_now.y == S.size.cur.y then
         pico.set.grid(false)
     end
- 
+
     output_present(false)
 end
-  
+
 local function has_ctrl()
     local state = SDL.getKeyboardState()
     return state[SDL.SCANCODE_LCTRL] or state[SDL.SCANCODE_RCTRL]
@@ -366,7 +423,11 @@ local function zoom_reset()
     pico.set.scroll({ x = 0, y = 0 })
 end
 
-local function event_from_sdl(e, xp)
+local function event_from_sdl(e, event_type)
+    if not e or type(e) ~= "table" then
+        return false
+    end
+
     if e.type == SDL.QUIT then
         if not S.expert then
             os.exit(0)
@@ -424,10 +485,10 @@ local function event_from_sdl(e, xp)
         end
     end
 
-    if xp == e.type then
+    if event_type == e.type then
         -- ok
 
-    elseif xp == SDL.ANY then
+    elseif event_type == SDL.ANY then
         if e.type ~= SDL.KEYDOWN
         and e.type ~= SDL.KEYUP
         and e.type ~= SDL.MOUSEBUTTONDOWN
@@ -451,22 +512,49 @@ local function event_from_sdl(e, xp)
     return true
 end
 
+-- EVENT
+function pico.input.event_ask(evt, event_type)
+    local e = SDL.pollEvent()
+
+    if not e then
+        return false
+    end
+
+    -- Copia os dados do evento
+    evt.type = e.type
+
+    if e.type == SDL.KEYDOWN or e.type == SDL.KEYUP then
+        evt.key = e.key
+    elseif e.type == SDL.MOUSEBUTTONDOWN or e.type == SDL.MOUSEBUTTONUP or e.type == SDL.MOUSEMOTION then
+        evt.button = e.button
+    end
+
+    return event_from_sdl(e, event_type)
+end
+
 -- INPUT
 function pico.input.delay(ms)
+    local start_time = SDL.getTicks()
+
     while true do
-        local old = SDL.getTicks()
-        local e = SDL.waitEvent(ms)
-        if e then
-            event_from_sdl(e, SDL.ANY)
-        end
-        local dt = SDL.getTicks() - old
-        ms = ms - dt
-        if ms <= 0 then
+        local current_time = SDL.getTicks()
+        local elapsed = current_time - start_time
+
+        if elapsed >= ms then
             return
         end
+
+        -- Processa eventos enquanto espera
+        local e = SDL.pollEvent()
+        if e and type(e) == "table" then
+            event_from_sdl(e, SDL.ANY)
+        end
+
+        -- Pequeno sleep para não sobrecarregar a CPU
+        SDL.delay(1)
     end
 end
- 
+
 -- SETTERS
 function pico.set.anchor_draw(anchor)
     S.anchor.draw = anchor
@@ -694,6 +782,10 @@ function pico.get.size_image(path)
 end
 
 function pico.get.size_text(text)
+    if not S.font.ttf then
+        error("No font loaded. Use pico.set.font() first.")
+    end
+
     if text == "" then
         return { x = 0, y = 0 }
     end
@@ -722,7 +814,7 @@ end
 function pico.get.zoom()
     return S.zoom
 end
- 
+
 -- OUTPUT
 function pico.output.draw_line(p1, p2)
     local pos = {
@@ -750,6 +842,7 @@ function pico.output.draw_line(p1, p2)
     S.anchor.draw = { x = PICO_LEFT, y = PICO_TOP }
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
     S.anchor.draw = anc
+    aux:destroy()
 end
 
 function pico.output.clear()
@@ -759,8 +852,13 @@ end
 
 function pico.output.draw_image_ext(pos, path, size)
     local surface = IMG.load(path)
+    if not surface then
+        error("Unable to load image: "..path)
+    end
     local tex = REN:createTextureFromSurface(surface)
+    surface:free()
     output_draw_tex(pos, tex, size)
+    tex:destroy()
 end
 
 function pico.output.draw_image(pos, path)
@@ -808,14 +906,14 @@ function pico.output.draw_rect(rect)
 
     aux:destroy()
 end
- 
+
 function pico.output.draw_pixel(pos)
     REN:setTarget(TEX)
     REN:setDrawColor(S.color.draw)
     REN:drawPoint({x = math.floor(X(pos.x, 1)), y = math.floor(Y(pos.y, 1))})
     output_present(false)
 end
- 
+
 function pico.output.draw_pixels(apos)
     local vec = {}
     for i, pos in ipairs(apos) do
@@ -864,7 +962,6 @@ function pico.output.draw_poly(apos)
     output_clear()
     S.color.clear = clr
 
-    local c = S.color.draw
     if S.style == PICO_FILL then
         draw_polygon_fill(ax, ay)
     elseif S.style == PICO_STROKE then
@@ -876,10 +973,33 @@ function pico.output.draw_poly(apos)
     S.anchor.draw = { x = PICO_LEFT, y = PICO_TOP }
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
     S.anchor.draw = anc
+    aux:destroy()
+end
+
+-- TEXT OUTPUT
+function pico.output.draw_text(text, pos)
+    if not S.font.ttf then
+        error("No font loaded. Use pico.set.font() first.")
+    end
+
+    local surface = S.font.ttf:renderUTF8Blended(text, S.color.draw)
+    if not surface then
+        error("Failed to render text: "..text)
+    end
+
+    local tex = REN:createTextureFromSurface(surface)
+    surface:free()
+
+    if not tex then
+        error("Failed to create texture from text")
+    end
+
+    output_draw_tex(pos, tex, {x = 0, y = 0})
+    tex:destroy()
 end
 
 -- INIT
- 
+
 function pico.init(on)
     if on then
         WIN = SDL.createWindow {
@@ -888,21 +1008,24 @@ function pico.init(on)
             height = PICO_DIM_PHY.y,
             flags = { SDL.window.Shown }
         }
- 
+
         REN = SDL.createRenderer(WIN, -1, SDL.rendererFlags.Accelerated)
         REN:setDrawBlendMode(SDL.blendMode.Blend)
- 
+
         TTF.init()
         MIXER.openAudio(22050, SDL.audioFormat.S16SYS, 2, 1024)
- 
+
         pico.set.size(PICO_DIM_PHY, PICO_DIM_LOG)
         pico.output.clear()
- 
+
     else
+        if S.font.ttf then
+            S.font.ttf:close()
+        end
         MIXER.closeAudio()
         TTF.quit()
         SDL.quit()
     end
 end
- 
+
 return pico
