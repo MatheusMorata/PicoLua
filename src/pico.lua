@@ -14,7 +14,7 @@ local pico = {
     get   = {},
     input = {},
     output = {},
-    pos   = nil,  -- Será definido depois
+    pos   = nil,
 }
 
 -- TYPES
@@ -53,7 +53,7 @@ local PICO_TOP = 0
 local PICO_MIDDLE = 50
 local PICO_BOTTOM = 100
 
--- Exporta constantes para uso externo
+-- Exporta constantes
 pico.POS_LEFT = PICO_LEFT
 pico.POS_CENTER = PICO_CENTER
 pico.POS_RIGHT = PICO_RIGHT
@@ -157,10 +157,6 @@ PICO_SIZE_FULLSCREEN = { x = 0, y = 1 }
 -- FUNÇÃO POS (estilo Python)
 -- ============================================
 
---- Calcula uma posição no mundo lógico com base em percentagens.
---- @param pct table: (x, y) percentagens (0-100) da largura e altura do mundo.
---- @param offset table: (x, y) deslocamento em pixels a ser adicionado à posição calculada. (opcional, padrão {0, 0})
---- @return x, y: coordenadas no mundo lógico.
 function pico.pos(pct, offset)
     offset = offset or {0, 0}
     local world_w = S.size.org.x or 64
@@ -392,7 +388,12 @@ local function set_size(phy, log)
         S.size.cur = log
 
         if TEX then
-            TEX:destroy()
+            -- Tenta diferentes métodos para liberar a textura
+            if TEX.destroy then
+                TEX:destroy()
+            elseif TEX.free then
+                TEX:free()
+            end
         end
 
         TEX = REN:createTexture(
@@ -520,7 +521,6 @@ function pico.input.event_ask(evt, event_type)
         return false
     end
 
-    -- Copia os dados do evento
     evt.type = e.type
 
     if e.type == SDL.KEYDOWN or e.type == SDL.KEYUP then
@@ -544,13 +544,11 @@ function pico.input.delay(ms)
             return
         end
 
-        -- Processa eventos enquanto espera
         local e = SDL.pollEvent()
         if e and type(e) == "table" then
             event_from_sdl(e, SDL.ANY)
         end
 
-        -- Pequeno sleep para não sobrecarregar a CPU
         SDL.delay(1)
     end
 end
@@ -842,7 +840,12 @@ function pico.output.draw_line(p1, p2)
     S.anchor.draw = { x = PICO_LEFT, y = PICO_TOP }
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
     S.anchor.draw = anc
-    aux:destroy()
+    -- Tenta diferentes métodos para liberar a textura
+    if aux.destroy then
+        aux:destroy()
+    elseif aux.free then
+        aux:free()
+    end
 end
 
 function pico.output.clear()
@@ -858,7 +861,11 @@ function pico.output.draw_image_ext(pos, path, size)
     local tex = REN:createTextureFromSurface(surface)
     surface:free()
     output_draw_tex(pos, tex, size)
-    tex:destroy()
+    if tex.destroy then
+        tex:destroy()
+    elseif tex.free then
+        tex:free()
+    end
 end
 
 function pico.output.draw_image(pos, path)
@@ -904,7 +911,11 @@ function pico.output.draw_rect(rect)
 
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
 
-    aux:destroy()
+    if aux.destroy then
+        aux:destroy()
+    elseif aux.free then
+        aux:free()
+    end
 end
 
 function pico.output.draw_pixel(pos)
@@ -973,7 +984,12 @@ function pico.output.draw_poly(apos)
     S.anchor.draw = { x = PICO_LEFT, y = PICO_TOP }
     output_draw_tex(pos, aux, PICO_SIZE_KEEP)
     S.anchor.draw = anc
-    aux:destroy()
+    
+    if aux.destroy then
+        aux:destroy()
+    elseif aux.free then
+        aux:free()
+    end
 end
 
 -- TEXT OUTPUT
@@ -995,7 +1011,12 @@ function pico.output.draw_text(text, pos)
     end
 
     output_draw_tex(pos, tex, {x = 0, y = 0})
-    tex:destroy()
+    
+    if tex.destroy then
+        tex:destroy()
+    elseif tex.free then
+        tex:free()
+    end
 end
 
 -- INIT
