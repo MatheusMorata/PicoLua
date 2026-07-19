@@ -235,44 +235,86 @@ local function output_present(force)
 end
  
 local function output_draw_tex(pos, tex, size)
-    local rct = {x = 0, y = 0, w = 0, h = 0}
-    _, _, rct.w, rct.h = tex:query()
-    local crp = S.crop
-    if S.crop.w == 0 then
-        crp.w = rct.w
+    local _, _, tw, th = tex:query()
+
+    local rct = {
+        x = 0,
+        y = 0,
+        w = tw,
+        h = th
+    }
+
+    local crp = {
+        x = S.crop.x,
+        y = S.crop.y,
+        w = S.crop.w,
+        h = S.crop.h
+    }
+
+    if crp.w == 0 then
+        crp.w = tw
     end
-    if S.crop.h == 0 then
-        crp.h = rct.h
+
+    if crp.h == 0 then
+        crp.h = th
     end
+
     if size.x == 0 and size.y == 0 then
         rct.w = crp.w
         rct.h = crp.h
+
     elseif size.x == 0 then
-        rct.w = rct.w * (size.y / rct.h)
+        rct.w = tw * (size.y / th)
         rct.h = size.y
+
     elseif size.y == 0 then
-        rct.h = rct.h * (size.x / rct.w)
+        rct.h = th * (size.x / tw)
         rct.w = size.x
+
     else
         rct.w = size.x
         rct.h = size.y
     end
 
-    rct.w = (S.scale.x*rct.w)/100
-    rct.h = (S.scale.y*rct.h)/100
+    rct.w = rct.w * S.scale.x / 100
+    rct.h = rct.h * S.scale.y / 100
 
-    rct.x = X(pos.x, rct.w);
-    rct.y = Y(pos.y, rct.h);
+    rct.x = X(pos.x, rct.w)
+    rct.y = Y(pos.y, rct.h)
 
-    local rot =  {
-        w = (S.anchor.rotate.x*rct.w)/100,
-        h = (S.anchor.rotate.y*rct.h)/100
+    local center = {
+        x = rct.w * S.anchor.rotate.x / 100,
+        y = rct.h * S.anchor.rotate.y / 100
     }
+
+    local flip
+
+    if S.flip.x and S.flip.y then
+        flip = SDL.rendererFlip.Horizontal | SDL.rendererFlip.Vertical
+
+    elseif S.flip.x then
+        flip = SDL.rendererFlip.Horizontal
+
+    elseif S.flip.y then
+        flip = SDL.rendererFlip.Vertical
+
+    else
+        flip = SDL.rendererFlip.None
+    end
+
+    local angle = S.angle
+
+    if S.flip.x and S.flip.y then
+        angle = angle + 180
+    end
 
     REN:copyEx{
         texture = tex,
-        source  = { x = 0, y = 0, w = 10, h = 20 },
-        flip    = SDL.rendererFlip.Horizontal
+        source = crp,
+        destination = rct,
+        angle = angle,
+        center = center,
+        flip = flip
     }
 
     output_present(false)
