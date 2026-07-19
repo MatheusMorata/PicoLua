@@ -356,92 +356,101 @@ local function set_size(phy, log)
     output_present(false)
 end
   
-function event_from_sdl(e, xp)
+local function has_ctrl()
+    local state = SDL.getKeyboardState()
+    return state[SDL.SCANCODE_LCTRL] or state[SDL.SCANCODE_RCTRL]
+end
+
+local function zoom_reset()
+    pico.set.zoom({ x = 100, y = 100 })
+    pico.set.scroll({ x = 0, y = 0 })
+end
+
+local function event_from_sdl(e, xp)
     if e.type == SDL.QUIT then
         if not S.expert then
             os.exit(0)
         end
- 
+
     elseif e.type == SDL.KEYDOWN then
         local state = SDL.getKeyboardState()
- 
-        if not state[SDL.SCANCODE_LCTRL] and not state[SDL.SCANCODE_RCTRL] then
-            return 0
-        end
- 
-        local key = e.key.keysym.sym
- 
-        if key == SDL.K_0 then
-            pico.set.zoom({ x = 100, y = 100 })
-            pico.set.scroll({ x = 0, y = 0 })
- 
-        elseif key == SDL.K_MINUS then
-            pico.set.zoom({
-                x = math.max(1, S.zoom.x - 10),
-                y = math.max(1, S.zoom.y - 10)
-            })
- 
-        elseif key == SDL.K_EQUALS then
-            pico.set.zoom({
-                x = S.zoom.x + 10,
-                y = S.zoom.y + 10
-            })
- 
-        elseif key == SDL.K_LEFT then
-            pico.set.scroll({
-                x = S.scroll.x - math.max(1, S.size.cur.x / 20),
-                y = S.scroll.y
-            })
- 
-        elseif key == SDL.K_RIGHT then
-            pico.set.scroll({
-                x = S.scroll.x + math.max(1, S.size.cur.x / 20),
-                y = S.scroll.y
-            })
- 
-        elseif key == SDL.K_UP then
-            pico.set.scroll({
-                x = S.scroll.x,
-                y = S.scroll.y - math.max(1, S.size.cur.y / 20)
-            })
- 
-        elseif key == SDL.K_DOWN then
-            pico.set.scroll({
-                x = S.scroll.x,
-                y = S.scroll.y + math.max(1, S.size.cur.y / 20)
-            })
- 
-        elseif key == SDL.K_g then
-            pico.set.grid(not S.grid)
+
+        if state[SDL.SCANCODE_LCTRL] or state[SDL.SCANCODE_RCTRL] then
+            local key = e.key.keysym.sym
+
+            if key == SDL.K_0 then
+                pico.set.zoom({ x = 100, y = 100 })
+                pico.set.scroll({ x = 0, y = 0 })
+
+            elseif key == SDL.K_MINUS then
+                pico.set.zoom({
+                    x = math.max(1, S.zoom.x - 10),
+                    y = math.max(1, S.zoom.y - 10)
+                })
+
+            elseif key == SDL.K_EQUALS then
+                pico.set.zoom({
+                    x = S.zoom.x + 10,
+                    y = S.zoom.y + 10
+                })
+
+            elseif key == SDL.K_LEFT then
+                pico.set.scroll({
+                    x = S.scroll.x - math.max(1, S.size.cur.x // 20),
+                    y = S.scroll.y
+                })
+
+            elseif key == SDL.K_RIGHT then
+                pico.set.scroll({
+                    x = S.scroll.x + math.max(1, S.size.cur.x // 20),
+                    y = S.scroll.y
+                })
+
+            elseif key == SDL.K_UP then
+                pico.set.scroll({
+                    x = S.scroll.x,
+                    y = S.scroll.y - math.max(1, S.size.cur.y // 20)
+                })
+
+            elseif key == SDL.K_DOWN then
+                pico.set.scroll({
+                    x = S.scroll.x,
+                    y = S.scroll.y + math.max(1, S.size.cur.y // 20)
+                })
+
+            elseif key == SDL.K_g then
+                pico.set.grid(not S.grid)
+            end
         end
     end
- 
+
     if xp == e.type then
+        -- ok
+
     elseif xp == SDL.ANY then
-        if not (
-            e.type == SDL.KEYDOWN or
-            e.type == SDL.KEYUP or
-            e.type == SDL.MOUSEBUTTONDOWN or
-            e.type == SDL.MOUSEBUTTONUP or
-            e.type == SDL.MOUSEMOTION or
-            e.type == SDL.QUIT
-        ) then
+        if e.type ~= SDL.KEYDOWN
+        and e.type ~= SDL.KEYUP
+        and e.type ~= SDL.MOUSEBUTTONDOWN
+        and e.type ~= SDL.MOUSEBUTTONUP
+        and e.type ~= SDL.MOUSEMOTION
+        and e.type ~= SDL.QUIT then
             return false
         end
+
     else
         return false
     end
- 
-    if e.type == SDL.MOUSEBUTTONDOWN or
-       e.type == SDL.MOUSEBUTTONUP or
-       e.type == SDL.MOUSEMOTION then
+
+    if e.type == SDL.MOUSEBUTTONDOWN
+    or e.type == SDL.MOUSEBUTTONUP
+    or e.type == SDL.MOUSEMOTION then
         e.button.x = e.button.x + S.scroll.x
         e.button.y = e.button.y + S.scroll.y
     end
- 
+
     return true
 end
- 
+
 -- INPUT
 function pico.input.delay(ms)
     while true do
