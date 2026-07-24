@@ -1,12 +1,8 @@
--- pico.lua
 -- IMPORTS
 local SDL   = require "SDL"
 local TTF   = require "SDL.ttf"
 local IMG   = require "SDL.image"
 local MIXER = require "SDL.mixer"
-
--- Torna SDL global para uso externo
-_G.SDL = SDL
 
 -- TABLES
 local pico = {
@@ -53,15 +49,6 @@ local PICO_TOP = 0
 local PICO_MIDDLE = 50
 local PICO_BOTTOM = 100
 
--- Exporta constantes
-pico.POS_LEFT = PICO_LEFT
-pico.POS_CENTER = PICO_CENTER
-pico.POS_RIGHT = PICO_RIGHT
-pico.POS_TOP = PICO_TOP
-pico.POS_MIDDLE = PICO_MIDDLE
-pico.POS_BOTTOM = PICO_BOTTOM
-pico.DRAW_FILL = PICO_FILL
-pico.DRAW_STROKE = PICO_STROKE
 
 local S = {
     anchor = {
@@ -153,9 +140,6 @@ local S = {
 PICO_SIZE_KEEP = { x = -1, y = -1 }
 PICO_SIZE_FULLSCREEN = { x = 0, y = 1 }
 
--- ============================================
--- FUNÇÃO POS (estilo Python)
--- ============================================
 
 function pico.pos(pct, offset)
     offset = offset or {0, 0}
@@ -167,10 +151,6 @@ function pico.pos(pct, offset)
     
     return x, y
 end
-
--- ============================================
--- FUNÇÕES AUXILIARES
--- ============================================
 
 local function PHY()
     local w, h = WIN:getSize()
@@ -424,91 +404,115 @@ local function zoom_reset()
     pico.set.scroll({ x = 0, y = 0 })
 end
 
-local function event_from_sdl(e, event_type)
-    if not e or type(e) ~= "table" then
+function pico.input.event_quit()
+    return last_event ~= nil 
+       and last_event.type == SDL.event.Quit
+end
+
+local function event_from_sdl(event, expected)
+
+    if event == nil then
         return false
     end
 
-    if e.type == SDL.QUIT then
-        if not S.expert then
-            os.exit(0)
-        end
+    last_event = event
 
-    elseif e.type == SDL.KEYDOWN then
-        local state = SDL.getKeyboardState()
+    if event.type == SDL.event.Quit then
+        return true
 
-        if state[SDL.SCANCODE_LCTRL] or state[SDL.SCANCODE_RCTRL] then
-            local key = e.key.keysym.sym
+    elseif event.type == SDL.event.KeyDown then
 
-            if key == SDL.K_0 then
-                pico.set.zoom({ x = 100, y = 100 })
-                pico.set.scroll({ x = 0, y = 0 })
+        local keyboard = SDL.getKeyboardState()
 
-            elseif key == SDL.K_MINUS then
-                pico.set.zoom({
-                    x = math.max(1, S.zoom.x - 10),
-                    y = math.max(1, S.zoom.y - 10)
+        if keyboard[SDL.scancode.LCTRL]
+        or keyboard[SDL.scancode.RCTRL] then
+
+            local key = event.keysym.sym
+
+            if key == SDL.key._0 then
+
+                pico.set_zoom({
+                    x = 100,
+                    y = 100
                 })
 
-            elseif key == SDL.K_EQUALS then
-                pico.set.zoom({
+                pico.set_scroll({
+                    x = 0,
+                    y = 0
+                })
+
+            elseif key == SDL.key.MINUS then
+
+                pico.set_zoom({
+                    x = max(1, S.zoom.x - 10),
+                    y = max(1, S.zoom.y - 10),
+                })
+
+            elseif key == SDL.key.EQUALS then
+
+                pico.set_zoom({
                     x = S.zoom.x + 10,
-                    y = S.zoom.y + 10
+                    y = S.zoom.y + 10,
                 })
 
-            elseif key == SDL.K_LEFT then
-                pico.set.scroll({
-                    x = S.scroll.x - math.max(1, S.size.cur.x // 20),
-                    y = S.scroll.y
+            elseif key == SDL.key.LEFT then
+
+                pico.set_scroll({
+                    x = S.scroll.x - max(1, S.size.cur.x // 20),
+                    y = S.scroll.y,
                 })
 
-            elseif key == SDL.K_RIGHT then
-                pico.set.scroll({
-                    x = S.scroll.x + math.max(1, S.size.cur.x // 20),
-                    y = S.scroll.y
+            elseif key == SDL.key.RIGHT then
+
+                pico.set_scroll({
+                    x = S.scroll.x + max(1, S.size.cur.x // 20),
+                    y = S.scroll.y,
                 })
 
-            elseif key == SDL.K_UP then
-                pico.set.scroll({
+            elseif key == SDL.key.UP then
+
+                pico.set_scroll({
                     x = S.scroll.x,
-                    y = S.scroll.y - math.max(1, S.size.cur.y // 20)
+                    y = S.scroll.y - max(1, S.size.cur.y // 20),
                 })
 
-            elseif key == SDL.K_DOWN then
-                pico.set.scroll({
+            elseif key == SDL.key.DOWN then
+
+                pico.set_scroll({
                     x = S.scroll.x,
-                    y = S.scroll.y + math.max(1, S.size.cur.y // 20)
+                    y = S.scroll.y + max(1, S.size.cur.y // 20),
                 })
 
-            elseif key == SDL.K_g then
-                pico.set.grid(not S.grid)
+            elseif key == SDL.key.G then
+
+                pico.set_grid(not S.grid)
+
+            elseif key == SDL.key.S then
+
+                pico.output_screenshot()
+
             end
         end
     end
 
-    if event_type == e.type then
-        -- ok
 
-    elseif event_type == SDL.ANY then
-        if e.type ~= SDL.KEYDOWN
-        and e.type ~= SDL.KEYUP
-        and e.type ~= SDL.MOUSEBUTTONDOWN
-        and e.type ~= SDL.MOUSEBUTTONUP
-        and e.type ~= SDL.MOUSEMOTION
-        and e.type ~= SDL.QUIT then
+    if expected ~= nil and expected ~= "any" then
+
+        if event.type ~= expected then
             return false
         end
 
-    else
-        return false
     end
 
-    if e.type == SDL.MOUSEBUTTONDOWN
-    or e.type == SDL.MOUSEBUTTONUP
-    or e.type == SDL.MOUSEMOTION then
-        e.button.x = e.button.x + S.scroll.x
-        e.button.y = e.button.y + S.scroll.y
+
+    if event.x then
+        event.x = event.x + S.scroll.x
     end
+
+    if event.y then
+        event.y = event.y + S.scroll.y
+    end
+
 
     return true
 end
@@ -534,22 +538,16 @@ end
 
 -- INPUT
 function pico.input.delay(ms)
-    local start_time = SDL.getTicks()
+    while ms > 0 do
+        local start = SDL.getTicks()
 
-    while true do
-        local current_time = SDL.getTicks()
-        local elapsed = current_time - start_time
+        local event = SDL.waitEvent(ms)
 
-        if elapsed >= ms then
-            return
+        if event then
+            event_from_sdl(event, "any")
         end
 
-        local e = SDL.pollEvent()
-        if e and type(e) == "table" then
-            event_from_sdl(e, SDL.ANY)
-        end
-
-        SDL.delay(1)
+        ms = ms - (SDL.getTicks() - start)
     end
 end
 
