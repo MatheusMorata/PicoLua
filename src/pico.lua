@@ -804,6 +804,11 @@ function pico.get.zoom()
 end
 
 -- OUTPUT
+
+function pico.output.present()
+    output_present(true)
+end
+
 function pico.output.draw_line(p1, p2)
     local pos = {
         x = hanchor(math.min(p1.x, p2.x), 1),
@@ -982,7 +987,6 @@ function pico.output.draw_poly(apos)
     end
 end
 
--- TEXT OUTPUT
 function pico.output.draw_text(text, pos)
     if not S.font.ttf then
         error("No font loaded. Use pico.set.font() first.")
