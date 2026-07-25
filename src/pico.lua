@@ -175,6 +175,18 @@ end
 
 -- LOCAL FUNCTIONS
 
+local function pico_dim_ext(pct, d)
+
+    return {
+        x = (pct.x * d.x) / 100,
+        y = (pct.y * d.y) / 100
+    }
+end
+
+local function pico_dim(pct)
+    return pico_dim_ext(pct, S.size.org)
+end
+
 local function draw_polygon_stroke(ax, ay)
     local n = #ax
     for i = 1, n do
