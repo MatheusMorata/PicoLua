@@ -13,19 +13,15 @@ local pico = {
 }
 
 -- VAR
-local PICO_LEFT =  0
-local PICO_CENTER = 50
-local PICO_RIGHT = 100
-local PICO_TOP = 0
-local PICO_MIDDLE = 50
-local PICO_BOTTOM = 100
-local PICO_STYLE = {
-    FILL = 0,
-    STROKE = 1,
-}
+PICO_LEFT =  0
+PICO_CENTER = 50
+PICO_RIGHT = 100
+PICO_TOP = 0
+PICO_MIDDLE = 50
+PICO_BOTTOM = 100
 local WIN
 local REN
-local PICO_TITLE = 'PicoLua'
+PICO_TITLE = 'PicoLua'
 
 -- TYPES
 local function Pico_Dim(x, y)
@@ -42,6 +38,23 @@ local function PHY()
         y = h
     }
 end
+
+local function hanchor(x, w)
+    return x - (S.anchor.draw.x * w) / 100
+end
+
+local function vanchor(y, h)
+    return y - (S.anchor.draw.y * h) / 100
+end
+
+local function X(v, w)
+    return hanchor(v, w) - S.scroll.x
+end
+
+local function Y(v, h)
+    return vanchor(v, h) - S.scroll.y
+end
+
 
 local PICO_SIZE_KEEP = Pico_Dim(0, 0)
 local PICO_SIZE_FULLSCREEN = Pico_Dim(0, 1)
@@ -91,7 +104,7 @@ S = {
         cur = { x = 0, y = 0 },
     },
 
-    style = PICO_STYLE.FILL,
+    style = 'PICO_FILL',
 
     flip = {
         x = false,
@@ -154,6 +167,105 @@ local function output_present(force)
     REN:setTarget(TEX)
 end
 
+function output_draw_tex(pos, tex, size)
+
+    local rct = {}
+
+    local _, _, w, h = tex:query()
+
+    rct.x = 0
+    rct.y = 0
+    rct.w = w
+    rct.h = h
+
+
+    local crp = {
+        x = S.crop.x,
+        y = S.crop.y,
+        w = S.crop.w,
+        h = S.crop.h
+    }
+
+    if S.crop.w == 0 then
+        crp.w = rct.w
+    end
+
+    if S.crop.h == 0 then
+        crp.h = rct.h
+    end
+
+
+    -- SIZE
+    if size.x == 0 and size.y == 0 then
+        -- tamanho normal da imagem
+        rct.w = crp.w
+        rct.h = crp.h
+
+    elseif size.x == 0 then
+        -- ajusta largura baseada na altura
+        rct.w = rct.w * (size.y / rct.h)
+        rct.h = size.y
+
+    elseif size.y == 0 then
+        -- ajusta altura baseada na largura
+        rct.h = rct.h * (size.x / rct.w)
+        rct.w = size.x
+
+    else
+        rct.w = size.x
+        rct.h = size.y
+    end
+
+
+    -- SCALE
+    rct.w = (S.scale.x * rct.w) / 100
+    rct.h = (S.scale.y * rct.h) / 100
+
+
+    -- ANCHOR / PAN
+    rct.x = X(pos.x, rct.w)
+    rct.y = Y(pos.y, rct.h)
+
+
+    -- ROTATE
+    local rot = {
+        x = (S.anchor.rotate.x * rct.w) / 100,
+        y = (S.anchor.rotate.y * rct.h) / 100
+    }
+
+
+    -- FLIP
+    local flip
+
+    if S.flip.x and S.flip.y then
+        S.angle = S.angle + 180
+    end
+
+    if S.flip.y then
+        flip = SDL.rendererFlip.Vertical
+
+    elseif S.flip.x then
+        flip = SDL.rendererFlip.Horizontal
+
+    else
+        flip = SDL.rendererFlip.None
+    end
+
+
+    REN:copyEx({
+        texture = tex,
+        source = crp,
+        destination = rct,
+        angle = S.angle,
+        center = rot,
+        flip = flip
+    })
+
+
+    output_present(0)
+end
+
+
 local function output_clear()
     REN:setDrawColor(S.color.clear)
     REN:clear()
@@ -167,6 +279,74 @@ function pico.set.grid(on)
     output_present(true)
 end
 
+
+-- UTILS
+function pico_dim_ext(pct, d)
+    assert(pct.x >= 0 and pct.y >= 0, "negative dimensions")
+
+    return {
+        x = (pct.x * d.x) / 100,
+        y = (pct.y * d.y) / 100
+    }
+end
+
+
+function pico_pos_vs_rect(pt, r)
+    return pico_pos_vs_rect_ext(
+        pt,
+        r,
+        S.anchor.draw,
+        S.anchor.draw
+    )
+end
+
+
+function pico_pos_vs_rect_ext(pt, r, ap, ar)
+    return pico_rect_vs_rect_ext(
+        {
+            x = pt.x,
+            y = pt.y,
+            w = 1,
+            h = 1
+        },
+        r,
+        ap,
+        ar
+    )
+end
+
+
+function pico.pos(pct)
+    return pico_pos_ext(
+        pct,
+        {
+            x = 0,
+            y = 0,
+            w = S.size.org.x,
+            h = S.size.org.y
+        },
+        {
+            x = PICO_LEFT,
+            y = PICO_TOP
+        }
+    )
+end
+
+
+function pico_pos_ext(pct, r, anc)
+    local old = S.anchor.draw
+
+    S.anchor.draw = anc
+
+    local pt = {
+        x = hanchor(r.x, r.w) + (pct.x * r.w) / 100,
+        y = vanchor(r.y, r.h) + (pct.y * r.h) / 100
+    }
+
+    S.anchor.draw = old
+
+    return pt
+end
 
 -- LOCAL FUNCTION
 local function event_from_sdl(e, xp)
@@ -308,7 +488,7 @@ local function set_size(phy, log)
         S.size.cur = log
 
         if TEX then
-            TEX:destroy()
+            TEX = nil
         end
 
         TEX = REN:createTexture(
@@ -460,6 +640,49 @@ end
 
 
 -- OUTPUT
+function pico.output.draw_rect(rect)
+
+    local pos = {
+        x = rect.x,
+        y = rect.y
+    }
+
+    local aux = REN:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, rect.w, rect.h)
+
+    REN:setDrawBlendMode(SDL.blendMode.Blend)
+
+    REN:setTarget(aux)
+
+    local clr = S.color.clear
+
+    S.color.clear = {
+        r = 0,
+        g = 0,
+        b = 0,
+        a = 0
+    }
+
+    output_clear()
+
+    S.color.clear = clr
+
+    rect.x = 0
+    rect.y = 0
+
+    if S.style == 'PICO_FILL' then
+        REN:fillRect(rect)
+
+    elseif S.style == 'PICO_STROKE' then
+        REN:drawRect(rect)
+    end
+
+    REN:setTarget(TEX)
+
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+
+    aux = nil
+end
+
 function pico.output.clear()
     output_clear()
     output_present(false)

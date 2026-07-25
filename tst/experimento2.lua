@@ -1,7 +1,21 @@
 local pico = dofile("../src/pico.lua")
+
 pico.init(true)
 
-pico.set.size({x = 800, y = 600}, {x = 80, y = 60})
+pico.set.color_draw({
+    r = 0,
+    g = 255,
+    b = 0,
+    a = 255
+})
 
-pico.input.delay(5000)
-pico.init(false)
+pico.output.draw_rect({
+    x = 27,
+    y = 19,
+    w = 10,
+    h = 10
+})
+
+while true do
+    pico.input.delay(16)
+end
