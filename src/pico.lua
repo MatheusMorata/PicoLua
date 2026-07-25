@@ -223,7 +223,7 @@ end
 local function show_grid()
     if not S.grid then return end
 
-    REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
+    REN:setDrawColor({ r = 119, g = 119, b = 119, a = 255 })
 
     local phy = PHY()
     REN:setLogicalSize(phy.x, phy.y)
@@ -252,11 +252,9 @@ local function output_present(force)
     if S.expert and not force then return end
 
     REN:setTarget()
-    REN:setDrawColor({ r = 119, g = 119, b = 119, a = 119 })
+    REN:setDrawColor({ r = 119, g = 119, b = 119, a = 255 })
     REN:clear()
-    if TEX then
-        REN:copy(TEX, nil, nil)
-    end
+    REN:copy(TEX)
     show_grid()
     REN:present()
     REN:setDrawColor(S.color.draw)
@@ -431,66 +429,61 @@ local function event_from_sdl(event, expected)
 
             if key == SDL.key._0 then
 
-                pico.set_zoom({
+                pico.set.zoom({
                     x = 100,
                     y = 100
                 })
 
-                pico.set_scroll({
+                pico.set.scroll({
                     x = 0,
                     y = 0
                 })
 
             elseif key == SDL.key.MINUS then
 
-                pico.set_zoom({
+                pico.set.zoom({
                     x = max(1, S.zoom.x - 10),
                     y = max(1, S.zoom.y - 10),
                 })
 
             elseif key == SDL.key.EQUALS then
 
-                pico.set_zoom({
+                pico.set.zoom({
                     x = S.zoom.x + 10,
                     y = S.zoom.y + 10,
                 })
 
             elseif key == SDL.key.LEFT then
 
-                pico.set_scroll({
+                pico.set.scroll({
                     x = S.scroll.x - max(1, S.size.cur.x // 20),
                     y = S.scroll.y,
                 })
 
             elseif key == SDL.key.RIGHT then
 
-                pico.set_scroll({
+                pico.set.scroll({
                     x = S.scroll.x + max(1, S.size.cur.x // 20),
                     y = S.scroll.y,
                 })
 
             elseif key == SDL.key.UP then
 
-                pico.set_scroll({
+                pico.set.scroll({
                     x = S.scroll.x,
                     y = S.scroll.y - max(1, S.size.cur.y // 20),
                 })
 
             elseif key == SDL.key.DOWN then
 
-                pico.set_scroll({
+                pico.set.scroll({
                     x = S.scroll.x,
                     y = S.scroll.y + max(1, S.size.cur.y // 20),
                 })
 
             elseif key == SDL.key.G then
 
-                pico.set_grid(not S.grid)
-
-            elseif key == SDL.key.S then
-
-                pico.output_screenshot()
-
+                pico.set.grid(not S.grid)
             end
         end
     end
@@ -658,7 +651,6 @@ function pico.set.style(style)
 end
 
 function pico.set.title(title)
-    PICO_TITLE = title
     WIN:setTitle(title)
 end
 
