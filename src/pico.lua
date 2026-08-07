@@ -619,6 +619,15 @@ end
 
 
 -- INPUT
+function pico.input.event_ask(evt, type)
+    local has = SDL.pollEvent(evt)
+    if not has then
+        return 0
+    end
+
+    return event_from_sdl(evt, type)
+end
+
 function pico.input.delay(ms)
     while true do
         local old = SDL.getTicks()
@@ -640,6 +649,97 @@ end
 
 
 -- OUTPUT
+function pico.output.draw_tri(rect)
+
+    local pos = {
+        x = rect.x,
+        y = rect.y
+    }
+
+
+    local aux = REN:createTexture(
+        SDL.pixelFormat.RGBA8888,
+        SDL.textureAccess.Target,
+        rect.w,
+        rect.h
+    )
+
+
+    REN:setDrawBlendMode(SDL.blendMode.Blend)
+    REN:setTarget(aux)
+
+
+    local clr = S.color.clear
+
+    S.color.clear = {
+        r = 0,
+        g = 0,
+        b = 0,
+        a = 0
+    }
+
+
+    output_clear()
+
+
+    S.color.clear = clr
+
+
+    REN:setDrawColor(S.color.draw)
+
+
+    if S.style == 'PICO_FILL' then
+
+        for y = 0, rect.h - 1 do
+
+            local largura = math.floor(
+                (y / (rect.h - 1)) * rect.w
+            )
+
+
+            REN:fillRect({
+                x = 0,
+                y = y,
+                w = largura,
+                h = 1
+            })
+
+        end
+
+
+    elseif S.style == 'PICO_STROKE' then
+
+        REN:drawLine({
+            x1 = 0,
+            y1 = 0,
+            x2 = 0,
+            y2 = rect.h - 1
+        })
+
+        REN:drawLine({
+            x1 = 0,
+            y1 = rect.h - 1,
+            x2 = rect.w - 1,
+            y2 = rect.h - 1
+        })
+
+        REN:drawLine({
+            x1 = 0,
+            y1 = 0,
+            x2 = rect.w - 1,
+            y2 = rect.h - 1
+        })
+
+    end
+
+
+    REN:setTarget(TEX)
+
+    output_draw_tex(pos, aux, PICO_SIZE_KEEP)
+
+    aux = nil
+end
+
 function pico.output.draw_rect(rect)
 
     local pos = {
