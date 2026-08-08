@@ -649,6 +649,22 @@ end
 
 
 -- OUTPUT
+function pico.output.draw_pixel(pos)
+    REN:drawPoint({x = X(pos.x, 1), y = Y(pos.y, 1)})
+    output_present(false)
+end
+
+function pico.output.draw_pixels(apos, count)
+    for i = 1, count do
+        local x = X(apos[i].x, 1)
+        local y = Y(apos[i].y, 1)
+
+        REN:drawPoint({x = x, y = y})
+    end
+
+    output_present(false)
+end
+
 function pico.output.draw_tri(rect)
 
     local pos = {
