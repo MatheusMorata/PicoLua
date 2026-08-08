@@ -656,10 +656,10 @@ end
 
 function pico.output.draw_pixels(apos, count)
     for i = 1, count do
-        local x = X(apos[i].x, 1)
-        local y = Y(apos[i].y, 1)
-
-        REN:drawPoint({x = x, y = y})
+        REN:drawPoint({
+            x = apos[i].x - S.scroll.x,
+            y = apos[i].y - S.scroll.y
+        })
     end
 
     output_present(false)

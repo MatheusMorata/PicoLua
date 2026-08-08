@@ -3,9 +3,10 @@ local utils = dofile("utils.lua")
 
 pico.init(true)
 
-utils.nave(pico)   -- desenha o quadrado verde (nave)
+utils.nave(pico)   
+utils.inimigos(pico) 
 
--- loop basico pra manter a janela viva
+
 while true do
     pico.input.delay(16)
 end
