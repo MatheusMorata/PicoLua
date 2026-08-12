@@ -16,14 +16,23 @@ pico.set.expert(true)
 --------------------------------------------------
 
 pico.set.size(
+
     {
+
         x = 640,
+
         y = 480
+
     },
+
     {
+
         x = 64,
+
         y = 48
+
     }
+
 )
 
 
@@ -38,29 +47,19 @@ pico.set.font(
 
 
 --------------------------------------------------
--- ESTADO DO JOGO
---
--- inicio
--- jogo
--- vitoria
--- derrota
+-- ESTADOS
 --------------------------------------------------
 
 local estado = "inicio"
 
 
 --------------------------------------------------
--- ESTADO DA TECLA Z
+-- ESTADOS DAS TECLAS
 --------------------------------------------------
 
 local z_antes = false
-
-
---------------------------------------------------
--- ESTADO DA TECLA P
---------------------------------------------------
-
 local p_antes = false
+local y_antes = false
 
 
 --------------------------------------------------
@@ -68,8 +67,11 @@ local p_antes = false
 --------------------------------------------------
 
 local nave = {
+
     x = 32,
+
     y = 42
+
 }
 
 
@@ -113,27 +115,38 @@ local inimigos = {}
 
 --------------------------------------------------
 -- CRIA OS INIMIGOS
---
--- 7 colunas x 3 linhas
 --------------------------------------------------
 
-for linha = 0, 2 do
+local function criar_inimigos()
 
-    for coluna = 0, 6 do
+    inimigos = {}
 
-        inimigos[#inimigos + 1] = {
+    for linha = 0, 2 do
 
-            x = 5 + coluna * 9,
+        for coluna = 0, 6 do
 
-            y = 6 + linha * 5,
+            inimigos[#inimigos + 1] = {
 
-            vivo = true
+                x = 5 + coluna * 9,
 
-        }
+                y = 6 + linha * 5,
+
+                vivo = true
+
+            }
+
+        end
 
     end
 
 end
+
+
+--------------------------------------------------
+-- INICIALIZA OS INIMIGOS
+--------------------------------------------------
+
+criar_inimigos()
 
 
 --------------------------------------------------
@@ -142,9 +155,76 @@ end
 
 local inimigo_direcao = 1
 
-local INIMIGO_INTERVALO = 20
+local INIMIGO_INTERVALO = 5
 
 local contador_inimigo = 0
+
+
+--------------------------------------------------
+-- REINICIA A PARTIDA
+--------------------------------------------------
+
+local function reiniciar_jogo()
+
+    --------------------------------------------------
+    -- NAVE
+    --------------------------------------------------
+
+    nave.x = 32
+    nave.y = 42
+
+
+    --------------------------------------------------
+    -- TIRO
+    --------------------------------------------------
+
+    tiro = nil
+
+
+    --------------------------------------------------
+    -- PONTUAÇÃO
+    --------------------------------------------------
+
+    pontos = 0
+
+
+    --------------------------------------------------
+    -- PAUSE
+    --------------------------------------------------
+
+    pausado = false
+
+
+    --------------------------------------------------
+    -- MOVIMENTO DOS INIMIGOS
+    --------------------------------------------------
+
+    inimigo_direcao = 1
+    contador_inimigo = 0
+
+
+    --------------------------------------------------
+    -- RECRIA OS INIMIGOS
+    --------------------------------------------------
+
+    criar_inimigos()
+
+
+    --------------------------------------------------
+    -- VOLTA PARA O JOGO
+    --------------------------------------------------
+
+    estado = "jogo"
+
+
+    --------------------------------------------------
+    -- Evita que o mesmo Y seja interpretado
+    -- novamente.
+    --------------------------------------------------
+
+    y_antes = true
+
+end
 
 
 --------------------------------------------------
@@ -157,12 +237,10 @@ local function mover_inimigos()
         contador_inimigo + 1
 
 
-    --------------------------------------------------
-    -- AINDA NÃO É HORA DE MOVER
-    --------------------------------------------------
-
     if contador_inimigo < INIMIGO_INTERVALO then
+
         return
+
     end
 
 
@@ -170,7 +248,7 @@ local function mover_inimigos()
 
 
     --------------------------------------------------
-    -- ENCONTRA OS LIMITES DOS INIMIGOS VIVOS
+    -- LIMITES DOS INIMIGOS
     --------------------------------------------------
 
     local menor_x = 64
@@ -186,16 +264,20 @@ local function mover_inimigos()
 
             encontrou = true
 
-
             menor_x = math.min(
+
                 menor_x,
+
                 enemy.x
+
             )
 
-
             maior_x = math.max(
+
                 maior_x,
+
                 enemy.x + 2
+
             )
 
         end
@@ -203,12 +285,10 @@ local function mover_inimigos()
     end
 
 
-    --------------------------------------------------
-    -- TODOS FORAM DESTRUÍDOS
-    --------------------------------------------------
-
     if not encontrou then
+
         return
+
     end
 
 
@@ -221,7 +301,6 @@ local function mover_inimigos()
 
         inimigo_direcao = -1
 
-
         for _, enemy in ipairs(inimigos) do
 
             if enemy.vivo then
@@ -232,7 +311,6 @@ local function mover_inimigos()
             end
 
         end
-
 
         return
 
@@ -248,7 +326,6 @@ local function mover_inimigos()
 
         inimigo_direcao = 1
 
-
         for _, enemy in ipairs(inimigos) do
 
             if enemy.vivo then
@@ -259,7 +336,6 @@ local function mover_inimigos()
             end
 
         end
-
 
         return
 
@@ -285,8 +361,7 @@ end
 
 
 --------------------------------------------------
--- VERIFICA SE TODOS OS INIMIGOS FORAM
--- DESTRUÍDOS
+-- VERIFICA VITÓRIA
 --------------------------------------------------
 
 local function verificar_vitoria()
@@ -301,75 +376,32 @@ local function verificar_vitoria()
 
     end
 
-
     return true
 
 end
 
 
 --------------------------------------------------
--- VERIFICA COLISÃO DO INIMIGO COM A NAVE
+-- VERIFICA DERROTA
+--
+-- Se os inimigos chegarem na linha da nave,
+-- o jogador perde.
 --------------------------------------------------
 
 local function verificar_colisao_nave()
+
+    --------------------------------------------------
+    -- LINHA LIMITE
+    --------------------------------------------------
+
+    local LIMITE_DERROTA = 39
+
 
     for _, enemy in ipairs(inimigos) do
 
         if enemy.vivo then
 
-            --------------------------------------------------
-            -- ÁREA DO INIMIGO
-            --------------------------------------------------
-
-            local inimigo_x1 =
-                enemy.x
-
-            local inimigo_x2 =
-                enemy.x + 2
-
-            local inimigo_y1 =
-                enemy.y
-
-            local inimigo_y2 =
-                enemy.y + 2
-
-
-            --------------------------------------------------
-            -- ÁREA DA NAVE
-            --------------------------------------------------
-
-            local nave_x1 =
-                nave.x - 3
-
-            local nave_x2 =
-                nave.x + 3
-
-            local nave_y1 =
-                nave.y
-
-            local nave_y2 =
-                nave.y + 4
-
-
-            --------------------------------------------------
-            -- TESTE DE COLISÃO
-            --------------------------------------------------
-
-            local colisao =
-
-                inimigo_x1 <= nave_x2
-                and
-
-                inimigo_x2 >= nave_x1
-                and
-
-                inimigo_y1 <= nave_y2
-                and
-
-                inimigo_y2 >= nave_y1
-
-
-            if colisao then
+            if enemy.y + 2 >= LIMITE_DERROTA then
 
                 return true
 
@@ -392,55 +424,29 @@ end
 local function verificar_colisao()
 
     if not tiro then
+
         return
+
     end
 
 
-    --------------------------------------------------
-    -- ÁREA DO TIRO
-    --------------------------------------------------
+    local tiro_x1 = tiro.x
+    local tiro_x2 = tiro.x
 
-    local tiro_x1 =
-        tiro.x
+    local tiro_y1 = tiro.y
+    local tiro_y2 = tiro.y + 1
 
-    local tiro_x2 =
-        tiro.x
-
-    local tiro_y1 =
-        tiro.y
-
-    local tiro_y2 =
-        tiro.y + 1
-
-
-    --------------------------------------------------
-    -- TESTA TODOS OS INIMIGOS
-    --------------------------------------------------
 
     for _, enemy in ipairs(inimigos) do
 
         if enemy.vivo then
 
-            --------------------------------------------------
-            -- ÁREA DO INIMIGO
-            --------------------------------------------------
+            local inimigo_x1 = enemy.x
+            local inimigo_x2 = enemy.x + 2
 
-            local inimigo_x1 =
-                enemy.x
+            local inimigo_y1 = enemy.y
+            local inimigo_y2 = enemy.y + 2
 
-            local inimigo_x2 =
-                enemy.x + 2
-
-            local inimigo_y1 =
-                enemy.y
-
-            local inimigo_y2 =
-                enemy.y + 2
-
-
-            --------------------------------------------------
-            -- TESTE DE COLISÃO
-            --------------------------------------------------
 
             local colisao =
 
@@ -458,27 +464,12 @@ local function verificar_colisao()
 
             if colisao then
 
-                --------------------------------------------------
-                -- DESTRÓI O INIMIGO
-                --------------------------------------------------
-
                 enemy.vivo = false
-
-
-                --------------------------------------------------
-                -- REMOVE O TIRO
-                --------------------------------------------------
 
                 tiro = nil
 
-
-                --------------------------------------------------
-                -- ADICIONA 10 PONTOS
-                --------------------------------------------------
-
                 pontos =
                     pontos + 10
-
 
                 return
 
@@ -492,7 +483,7 @@ end
 
 
 --------------------------------------------------
--- DESENHA A TELA INICIAL UMA VEZ
+-- TELA INICIAL
 --------------------------------------------------
 
 utils.tela_inicio(
@@ -508,50 +499,28 @@ while true do
 
 
     --------------------------------------------------
-    -- TELA INICIAL
+    -- INÍCIO
     --------------------------------------------------
 
     if estado == "inicio" then
 
-
-        --------------------------------------------------
-        -- Z
-        --------------------------------------------------
-
         local z_agora =
             pico.get.key(pico.key.Z) == 1
 
-
-        --------------------------------------------------
-        -- Z FOI PRESSIONADO
-        --------------------------------------------------
 
         if z_agora
         and not z_antes then
 
             estado = "jogo"
 
-
-            --------------------------------------------------
-            -- Impede que o mesmo Z dispare imediatamente
-            --------------------------------------------------
-
             z_antes = true
 
         end
 
 
-        --------------------------------------------------
-        -- GUARDA ESTADO DA TECLA
-        --------------------------------------------------
-
         z_antes =
             z_agora
 
-
-        --------------------------------------------------
-        -- DESENHA TELA INICIAL
-        --------------------------------------------------
 
         utils.tela_inicio(
             pico
@@ -564,9 +533,8 @@ while true do
 
     elseif estado == "jogo" then
 
-
         --------------------------------------------------
-        -- TECLA P
+        -- PAUSE
         --------------------------------------------------
 
         local p_agora =
@@ -587,7 +555,7 @@ while true do
 
 
         --------------------------------------------------
-        -- JOGO NÃO PAUSADO
+        -- JOGO ATIVO
         --------------------------------------------------
 
         if not pausado then
@@ -601,8 +569,11 @@ while true do
 
                 nave.x =
                     math.max(
+
                         NAVE_MIN_X,
+
                         nave.x - 1
+
                     )
 
             end
@@ -612,8 +583,11 @@ while true do
 
                 nave.x =
                     math.min(
+
                         NAVE_MAX_X,
+
                         nave.x + 1
+
                     )
 
             end
@@ -642,10 +616,6 @@ while true do
             end
 
 
-            --------------------------------------------------
-            -- ESTADO DA TECLA Z
-            --------------------------------------------------
-
             z_antes =
                 z_agora
 
@@ -659,10 +629,6 @@ while true do
                 tiro.y =
                     tiro.y - 2
 
-
-                --------------------------------------------------
-                -- TIRO SAIU DA TELA
-                --------------------------------------------------
 
                 if tiro.y < 0 then
 
@@ -688,27 +654,21 @@ while true do
 
 
             --------------------------------------------------
-            -- VERIFICA VITÓRIA
-            --
-            -- É verificada depois da colisão do tiro.
+            -- VERIFICA DERROTA
             --------------------------------------------------
 
-            if verificar_vitoria() then
+            if verificar_colisao_nave() then
 
-                estado = "vitoria"
-
-            else
+                estado = "derrota"
 
 
-                --------------------------------------------------
-                -- VERIFICA DERROTA
-                --------------------------------------------------
+            --------------------------------------------------
+            -- VERIFICA VITÓRIA
+            --------------------------------------------------
 
-                if verificar_colisao_nave() then
+            elseif verificar_vitoria() then
 
-                    estado = "derrota"
-
-                end
+                estado = "derrota"
 
             end
 
@@ -720,38 +680,56 @@ while true do
         --------------------------------------------------
 
         utils.desenhar(
+
             pico,
+
             nave,
+
             inimigos,
+
             tiro,
+
             pontos,
+
             pausado
+
         )
 
 
     --------------------------------------------------
-    -- VITÓRIA
-    --------------------------------------------------
-
-    elseif estado == "vitoria" then
-
-
-        utils.vitoria(
-            pico
-        )
-
-
-    --------------------------------------------------
-    -- DERROTA
+    -- GAME OVER
     --------------------------------------------------
 
     elseif estado == "derrota" then
 
 
-        utils.derrota(
+        utils.game_over(
+
             pico,
+
             pontos
+
         )
+
+
+        --------------------------------------------------
+        -- Y PARA JOGAR NOVAMENTE
+        --------------------------------------------------
+
+        local y_agora =
+            pico.get.key(pico.key.Y) == 1
+
+
+        if y_agora
+        and not y_antes then
+
+            reiniciar_jogo()
+
+        end
+
+
+        y_antes =
+            y_agora
 
     end
 
