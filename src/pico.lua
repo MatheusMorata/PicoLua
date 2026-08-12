@@ -443,10 +443,7 @@ local function event_from_sdl(e, xp)
 
     if e.type == SDL.event.Quit then
 
-        if not S.expert then
-            os.exit(0)
-        end
-
+        os.exit(0)
     elseif e.type == SDL.event.KeyDown then
 
         local state = SDL.getKeyboardState()
