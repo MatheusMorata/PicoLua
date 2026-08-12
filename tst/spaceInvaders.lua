@@ -1,7 +1,13 @@
 local pico = dofile("../src/pico.lua")
 local utils = dofile("utils.lua")
 
+
+--------------------------------------------------
+-- INICIALIZAÇÃO
+--------------------------------------------------
+
 pico.init(true)
+
 
 --------------------------------------------------
 -- NAVE
@@ -31,21 +37,42 @@ local z_antes = false
 local inimigos_x = 0
 local inimigos_y = 0
 
--- 1 = direita
--- -1 = esquerda
 local inimigos_direcao = 1
 
--- Movimento bem lento
+-- Quanto maior, mais lento
 local contador_inimigos = 0
-local intervalo_inimigos = 5
+local intervalo_inimigos = 20
 
--- Limites do grupo de inimigos
+
+--------------------------------------------------
+-- MATRIZ DE INIMIGOS
+--
+-- 3 linhas x 7 colunas
+--------------------------------------------------
+
+local vivos = {}
+
+for linha = 1, 3 do
+
+    vivos[linha] = {}
+
+    for coluna = 1, 7 do
+        vivos[linha][coluna] = true
+    end
+
+end
+
+
+--------------------------------------------------
+-- LIMITES DOS INIMIGOS
+--------------------------------------------------
+
 local INIMIGOS_MIN_X = 5
 local INIMIGOS_MAX_X = 5 + (6 * 9) + 2
 
 
 --------------------------------------------------
--- DESENHO INICIAL
+-- FUNÇÃO PARA DESENHAR
 --------------------------------------------------
 
 utils.desenhar(
@@ -53,7 +80,8 @@ utils.desenhar(
     nave,
     tiro,
     inimigos_x,
-    inimigos_y
+    inimigos_y,
+    vivos
 )
 
 
@@ -62,6 +90,7 @@ utils.desenhar(
 --------------------------------------------------
 
 while true do
+
 
     --------------------------------------------------
     -- MOVIMENTO DA NAVE
@@ -94,8 +123,9 @@ while true do
     local z_agora =
         pico.get.key(pico.key.Z) == 1
 
-    -- Dispara somente quando a tecla é pressionada
-    if z_agora and not z_antes and not tiro then
+    if z_agora
+       and not z_antes
+       and not tiro then
 
         tiro = {
             x = nave.x,
@@ -123,10 +153,74 @@ while true do
 
 
     --------------------------------------------------
+    -- COLISÃO DO TIRO
+    --------------------------------------------------
+
+    if tiro then
+
+        local tiro_rect = {
+            x = tiro.x,
+            y = tiro.y,
+            w = 1,
+            h = 2
+        }
+
+
+        local acertou = false
+
+
+        for linha = 1, 3 do
+
+            for coluna = 1, 7 do
+
+                if vivos[linha][coluna] then
+
+                    local inimigo_rect = {
+                        x = 5 + (coluna - 1) * 9 + inimigos_x,
+                        y = 6 + (linha - 1) * 5 + inimigos_y,
+                        w = 3,
+                        h = 3
+                    }
+
+
+                    if pico_rect_vs_rect(
+                        tiro_rect,
+                        inimigo_rect
+                    ) then
+
+                        -- Remove o inimigo
+                        vivos[linha][coluna] = false
+
+                        -- Remove o tiro
+                        tiro = nil
+
+                        acertou = true
+
+                        break
+
+                    end
+
+                end
+
+            end
+
+
+            if acertou then
+                break
+            end
+
+        end
+
+    end
+
+
+    --------------------------------------------------
     -- MOVIMENTO DOS INIMIGOS
     --------------------------------------------------
 
-    contador_inimigos = contador_inimigos + 1
+    contador_inimigos =
+        contador_inimigos + 1
+
 
     if contador_inimigos >= intervalo_inimigos then
 
@@ -148,8 +242,8 @@ while true do
 
             inimigos_direcao = -1
 
-            -- Desce uma linha
-            inimigos_y = inimigos_y + 1
+            inimigos_y =
+                inimigos_y + 1
 
         end
 
@@ -165,8 +259,8 @@ while true do
 
             inimigos_direcao = 1
 
-            -- Desce uma linha
-            inimigos_y = inimigos_y + 1
+            inimigos_y =
+                inimigos_y + 1
 
         end
 
@@ -174,7 +268,7 @@ while true do
 
 
     --------------------------------------------------
-    -- DESENHA A CENA
+    -- DESENHA
     --------------------------------------------------
 
     utils.desenhar(
@@ -182,12 +276,13 @@ while true do
         nave,
         tiro,
         inimigos_x,
-        inimigos_y
+        inimigos_y,
+        vivos
     )
 
 
     --------------------------------------------------
-    -- CONTROLE DA VELOCIDADE DO JOGO
+    -- CONTROLE DO TEMPO
     --------------------------------------------------
 
     pico.input.delay(16)

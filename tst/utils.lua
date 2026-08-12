@@ -1,6 +1,11 @@
 local utils = {}
 
-function utils.inimigos(pico, deslocamento_x, deslocamento_y)
+
+--------------------------------------------------
+-- INIMIGOS
+--------------------------------------------------
+
+function utils.inimigos(pico, deslocamento_x, deslocamento_y, vivos)
 
     pico.set.color_draw({
         r = 255,
@@ -11,37 +16,56 @@ function utils.inimigos(pico, deslocamento_x, deslocamento_y)
 
     local pixels = {}
 
+    -- Cada inimigo possui 3x3 pixels
     local function inimigo(x, y)
 
         for py = 0, 2 do
             for px = 0, 2 do
+
                 pixels[#pixels + 1] = {
                     x = x + px + deslocamento_x,
                     y = y + py + deslocamento_y
                 }
+
             end
         end
 
     end
 
-    -- 7 colunas x 3 linhas
-    for linha = 0, 2 do
-        for coluna = 0, 6 do
 
-            inimigo(
-                5 + coluna * 9,
-                6 + linha * 5
-            )
+    -- 7 colunas x 3 linhas
+    for linha = 1, 3 do
+
+        for coluna = 1, 7 do
+
+            if vivos[linha][coluna] then
+
+                inimigo(
+                    5 + (coluna - 1) * 9,
+                    6 + (linha - 1) * 5
+                )
+
+            end
 
         end
+
     end
 
-    pico.output.draw_pixels(pixels, #pixels)
+
+    if #pixels > 0 then
+        pico.output.draw_pixels(
+            pixels,
+            #pixels
+        )
+    end
 
 end
 
--- Nave triangular pequena
--- nave = { x = <centro horizontal>, y = <y da ponta> }
+
+--------------------------------------------------
+-- NAVE
+--------------------------------------------------
+
 function utils.nave(pico, nave)
 
     pico.set.color_draw({
@@ -53,8 +77,8 @@ function utils.nave(pico, nave)
 
     local cx, cy = nave.x, nave.y
 
-    -- Deslocamentos relativos ao centro (originalmente centrado em x=32)
     local pixels = {
+
         -- ponta
         { x = cx + 0, y = cy + 0 },
 
@@ -84,15 +108,24 @@ function utils.nave(pico, nave)
         { x = cx + 2, y = cy + 4 },
     }
 
-    pico.output.draw_pixels(pixels, #pixels)
+    pico.output.draw_pixels(
+        pixels,
+        #pixels
+    )
 
 end
 
--- Desenha o tiro (retângulo amarelo)
--- tiro = { x = ..., y = ... }
+
+--------------------------------------------------
+-- TIRO
+--------------------------------------------------
+
 function utils.tiro(pico, tiro)
 
-    pico.set.anchor_draw({ x = PICO_LEFT, y = PICO_TOP })
+    pico.set.anchor_draw({
+        x = PICO_LEFT,
+        y = PICO_TOP
+    })
 
     pico.set.color_draw({
         r = 255,
@@ -108,28 +141,51 @@ function utils.tiro(pico, tiro)
         h = 2
     })
 
-    -- restaura âncora padrão (centro), usada por nave/inimigos
-    pico.set.anchor_draw({ x = PICO_CENTER, y = PICO_MIDDLE })
+    pico.set.anchor_draw({
+        x = PICO_CENTER,
+        y = PICO_MIDDLE
+    })
 
 end
 
--- Desenha a cena inteira: limpa, nave, inimigos e tiro (se existir)
-function utils.desenhar(pico, nave, tiro, inimigos_x, inimigos_y)
+
+--------------------------------------------------
+-- DESENHA TUDO
+--------------------------------------------------
+
+function utils.desenhar(
+    pico,
+    nave,
+    tiro,
+    inimigos_x,
+    inimigos_y,
+    vivos
+)
 
     pico.output.clear()
 
-    utils.nave(pico, nave)
+    utils.nave(
+        pico,
+        nave
+    )
 
     utils.inimigos(
         pico,
         inimigos_x,
-        inimigos_y
+        inimigos_y,
+        vivos
     )
 
     if tiro then
-        utils.tiro(pico, tiro)
+
+        utils.tiro(
+            pico,
+            tiro
+        )
+
     end
 
 end
+
 
 return utils
