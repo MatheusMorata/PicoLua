@@ -401,6 +401,43 @@ function pico_pos_ext(pct, r, anc)
     return pt
 end
 
+function pico_rect_vs_rect_ext(r1, r2, a1, a2)
+
+    assert(S.angle == 0, "rotation angle != 0")
+
+    local old = S.anchor.draw
+
+    S.anchor.draw = a1
+
+    local x1 = hanchor(r1.x, r1.w)
+    local y1 = vanchor(r1.y, r1.h)
+
+    S.anchor.draw = a2
+
+    local x2 = hanchor(r2.x, r2.w)
+    local y2 = vanchor(r2.y, r2.h)
+
+    S.anchor.draw = old
+
+    return
+        x1 < x2 + r2.w and
+        x1 + r1.w > x2 and
+        y1 < y2 + r2.h and
+        y1 + r1.h > y2
+end
+
+
+function pico_rect_vs_rect(r1, r2)
+
+    return pico_rect_vs_rect_ext(
+        r1,
+        r2,
+        S.anchor.draw,
+        S.anchor.draw
+    )
+
+end
+
 -- LOCAL FUNCTION
 local function event_from_sdl(e, xp)
 
@@ -420,7 +457,7 @@ local function event_from_sdl(e, xp)
         if not lctrl and not rctrl then
             goto check_event
         end
-        
+
         if key == SDL.key._0 then
 
             pico.set.zoom({
