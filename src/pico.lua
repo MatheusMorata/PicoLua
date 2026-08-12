@@ -23,6 +23,59 @@ local WIN
 local REN
 PICO_TITLE = 'PicoLua'
 
+local function scancode(name)
+    local ok, val = pcall(function() return SDL.scancode[name] end)
+    if ok then return val end
+    return nil
+end
+
+
+pico.key = {
+    -- Letras
+    A = scancode("A"), B = scancode("B"), C = scancode("C"), D = scancode("D"),
+    E = scancode("E"), F = scancode("F"), G = scancode("G"), H = scancode("H"),
+    I = scancode("I"), J = scancode("J"), K = scancode("K"), L = scancode("L"),
+    M = scancode("M"), N = scancode("N"), O = scancode("O"), P = scancode("P"),
+    Q = scancode("Q"), R = scancode("R"), S = scancode("S"), T = scancode("T"),
+    U = scancode("U"), V = scancode("V"), W = scancode("W"), X = scancode("X"),
+    Y = scancode("Y"), Z = scancode("Z"),
+
+    -- Números (linha superior do teclado)
+    -- obs: não dá pra usar pico.key.0 direto em Lua, por isso NumX
+    Num0 = scancode("0"), Num1 = scancode("1"), Num2 = scancode("2"),
+    Num3 = scancode("3"), Num4 = scancode("4"), Num5 = scancode("5"),
+    Num6 = scancode("6"), Num7 = scancode("7"), Num8 = scancode("8"),
+    Num9 = scancode("9"),
+
+    -- Setas
+    Left  = scancode("Left"),
+    Right = scancode("Right"),
+    Up    = scancode("Up"),
+    Down  = scancode("Down"),
+
+    -- Modificadores
+    LCtrl  = scancode("LCtrl"),  RCtrl  = scancode("RCtrl"),
+    LShift = scancode("LShift"), RShift = scancode("RShift"),
+    LAlt   = scancode("LAlt"),   RAlt   = scancode("RAlt"),
+
+    -- Controle geral
+    Space     = scancode("Space"),
+    Return    = scancode("Return"),
+    Escape    = scancode("Escape"),
+    Tab       = scancode("Tab"),
+    Backspace = scancode("Backspace"),
+
+    -- Sinais
+    Minus  = scancode("Minus"),
+    Equals = scancode("Equals"),
+
+    -- Teclas de função
+    F1 = scancode("F1"), F2 = scancode("F2"), F3 = scancode("F3"),
+    F4 = scancode("F4"), F5 = scancode("F5"), F6 = scancode("F6"),
+    F7 = scancode("F7"), F8 = scancode("F8"), F9 = scancode("F9"),
+    F10 = scancode("F10"), F11 = scancode("F11"), F12 = scancode("F12"),
+}
+
 -- TYPES
 local function Pico_Dim(x, y)
     return {

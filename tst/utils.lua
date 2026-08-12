@@ -26,12 +26,10 @@ function utils.inimigos(pico)
     -- 7 colunas x 3 linhas
     for linha = 0, 2 do
         for coluna = 0, 6 do
-
             inimigo(
                 5 + coluna * 9,
                 6 + linha * 5
             )
-
         end
     end
 
@@ -84,5 +82,29 @@ function utils.nave(pico)
 
 end
 
+-- Desenha o tiro (retângulo amarelo)
+-- tiro = { x = ..., y = ... }
+function utils.tiro(pico, tiro)
+
+    pico.set.anchor_draw({ x = PICO_LEFT, y = PICO_TOP })
+
+    pico.set.color_draw({
+        r = 255,
+        g = 255,
+        b = 0,
+        a = 255
+    })
+
+    pico.output.draw_rect({
+        x = tiro.x,
+        y = tiro.y,
+        w = 1,
+        h = 2
+    })
+
+    -- restaura âncora padrão (centro), usada por nave/inimigos
+    pico.set.anchor_draw({ x = PICO_CENTER, y = PICO_MIDDLE })
+
+end
 
 return utils
