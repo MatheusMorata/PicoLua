@@ -39,7 +39,6 @@ function utils.inimigos(pico)
 
 end
 
-
 function utils.nave(pico)
 
     pico.set.color_draw({

@@ -509,6 +509,11 @@ local function set_size(phy, log)
     output_present(false)
 end
 
+-- GETTERS
+function pico.get.key(key)
+    local state = SDL.getKeyboardState()
+    return state[key] and 1 or 0
+end
 
 -- SETTERS
 function pico.set.anchor_draw(anchor)
