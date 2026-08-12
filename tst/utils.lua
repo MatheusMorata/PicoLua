@@ -1,5 +1,6 @@
 local utils = {}
 
+
 --------------------------------------------------
 -- CONFIGURAÇÃO DOS INIMIGOS
 --------------------------------------------------
@@ -46,6 +47,8 @@ function utils.tela_inicio(
 
     pico.output.clear()
 
+    pico.set.grid(false)
+
     pico.set.anchor_draw({
 
         x = PICO_LEFT,
@@ -53,6 +56,7 @@ function utils.tela_inicio(
         y = PICO_TOP
 
     })
+
 
     pico.set.color_draw({
 
@@ -65,6 +69,7 @@ function utils.tela_inicio(
         a = 255
 
     })
+
 
     pico.output.draw_text(
 
@@ -80,6 +85,7 @@ function utils.tela_inicio(
 
     )
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -92,6 +98,7 @@ function utils.tela_inicio(
 
     })
 
+
     pico.set.anchor_draw({
 
         x = PICO_CENTER,
@@ -99,12 +106,12 @@ function utils.tela_inicio(
         y = PICO_MIDDLE
 
     })
-
+    pico.set.grid(true)
 end
 
 
 --------------------------------------------------
--- DESENHA OS INIMIGOS
+-- INIMIGOS
 --------------------------------------------------
 
 function utils.inimigos(
@@ -120,6 +127,7 @@ function utils.inimigos(
 
     })
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -131,6 +139,7 @@ function utils.inimigos(
         a = 255
 
     })
+
 
     for _, enemy in ipairs(inimigos) do
 
@@ -145,6 +154,7 @@ function utils.inimigos(
 
     end
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -156,6 +166,7 @@ function utils.inimigos(
         a = 255
 
     })
+
 
     pico.set.anchor_draw({
 
@@ -185,6 +196,7 @@ function utils.nave(
 
     })
 
+
     pico.set.color_draw({
 
         r = 0,
@@ -197,8 +209,10 @@ function utils.nave(
 
     })
 
+
     local cx = nave.x
     local cy = nave.y
+
 
     local pixels = {
 
@@ -294,10 +308,12 @@ function utils.nave(
 
     }
 
+
     pico.output.draw_pixels(
         pixels,
         #pixels
     )
+
 
     pico.set.color_draw({
 
@@ -310,6 +326,7 @@ function utils.nave(
         a = 255
 
     })
+
 
     pico.set.anchor_draw({
 
@@ -339,6 +356,7 @@ function utils.tiro(
 
     })
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -350,6 +368,7 @@ function utils.tiro(
         a = 255
 
     })
+
 
     pico.output.draw_rect({
 
@@ -363,6 +382,7 @@ function utils.tiro(
 
     })
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -374,6 +394,7 @@ function utils.tiro(
         a = 255
 
     })
+
 
     pico.set.anchor_draw({
 
@@ -403,6 +424,7 @@ function utils.pontuacao(
 
     })
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -414,6 +436,7 @@ function utils.pontuacao(
         a = 255
 
     })
+
 
     pico.output.draw_text(
 
@@ -428,6 +451,7 @@ function utils.pontuacao(
         tostring(pontos)
 
     )
+
 
     pico.set.anchor_draw({
 
@@ -456,6 +480,7 @@ function utils.pause(
 
     })
 
+
     pico.set.color_draw({
 
         r = 255,
@@ -468,11 +493,12 @@ function utils.pause(
 
     })
 
+
     pico.output.draw_text(
 
         {
 
-            x = 22,
+            x = 32 - 10,
 
             y = 24
 
@@ -481,6 +507,7 @@ function utils.pause(
         "PAUSE"
 
     )
+
 
     pico.set.color_draw({
 
@@ -494,6 +521,7 @@ function utils.pause(
 
     })
 
+
     pico.set.anchor_draw({
 
         x = PICO_CENTER,
@@ -506,7 +534,7 @@ end
 
 
 --------------------------------------------------
--- GAME OVER
+-- TELA DE GAME OVER
 --------------------------------------------------
 
 function utils.game_over(
@@ -514,18 +542,11 @@ function utils.game_over(
     pontos
 )
 
-    --------------------------------------------------
-    -- LIMPA A TELA
-    --------------------------------------------------
-
     pico.output.clear()
 
 
     --------------------------------------------------
     -- ÂNCORA SUPERIOR ESQUERDA
-    --
-    -- Usamos a origem da tela para que o cálculo
-    -- manual da posição seja previsível.
     --------------------------------------------------
 
     pico.set.anchor_draw({
@@ -556,16 +577,22 @@ function utils.game_over(
 
     --------------------------------------------------
     -- GAME OVER
+    --
+    -- Aproximadamente 10 caracteres x 4 pixels.
     --------------------------------------------------
 
-    local texto_game_over = "GAME OVER!"
+    local texto_game_over =
+        "GAME OVER!"
+
 
     local largura_game_over =
         #texto_game_over * 4
 
 
     local x_game_over =
-        (64 - largura_game_over) / 2
+        math.floor(
+            (64 - largura_game_over) / 2
+        )
 
 
     pico.output.draw_text(
@@ -596,7 +623,9 @@ function utils.game_over(
 
 
     local x_score =
-        (64 - largura_score) / 2
+        math.floor(
+            (64 - largura_score) / 2
+        )
 
 
     pico.output.draw_text(
@@ -605,11 +634,219 @@ function utils.game_over(
 
             x = x_score,
 
-            y = 27
+            y = 28
 
         },
 
         texto_score
+
+    )
+
+
+    --------------------------------------------------
+    -- RESTAURA ÂNCORA
+    --------------------------------------------------
+
+    pico.set.anchor_draw({
+
+        x = PICO_CENTER,
+
+        y = PICO_MIDDLE
+
+    })
+
+end
+
+
+--------------------------------------------------
+-- TELA DE NOVO RECORDE
+--------------------------------------------------
+
+function utils.novo_recorde(
+    pico,
+    nome,
+    posicao
+)
+
+    pico.output.clear()
+
+
+    --------------------------------------------------
+    -- ÂNCORA SUPERIOR ESQUERDA
+    --------------------------------------------------
+
+    pico.set.anchor_draw({
+
+        x = PICO_LEFT,
+
+        y = PICO_TOP
+
+    })
+
+
+    --------------------------------------------------
+    -- COR BRANCA
+    --------------------------------------------------
+
+    pico.set.color_draw({
+
+        r = 255,
+
+        g = 255,
+
+        b = 255,
+
+        a = 255
+
+    })
+
+
+    --------------------------------------------------
+    -- NEW
+    --------------------------------------------------
+
+    local texto_new =
+        "NEW"
+
+
+    local largura_new =
+        #texto_new * 4
+
+
+    local x_new =
+        math.floor(
+            (64 - largura_new) / 2
+        )
+
+
+    pico.output.draw_text(
+
+        {
+
+            x = x_new,
+
+            y = 8
+
+        },
+
+        texto_new
+
+    )
+
+
+    --------------------------------------------------
+    -- HIGH SCORE
+    --------------------------------------------------
+
+    local texto_high =
+        "HIGH SCORE"
+
+
+    local largura_high =
+        #texto_high * 4
+
+
+    local x_high =
+        math.floor(
+            (64 - largura_high) / 2
+        )
+
+
+    pico.output.draw_text(
+
+        {
+
+            x = x_high,
+
+            y = 16
+
+        },
+
+        texto_high
+
+    )
+
+
+    --------------------------------------------------
+    -- MONTA O NOME
+    --------------------------------------------------
+
+    local texto_nome = ""
+
+
+    for i = 1, 5 do
+
+        if nome[i] then
+
+            texto_nome =
+                texto_nome .. nome[i]
+
+        else
+
+            texto_nome =
+                texto_nome .. "_"
+
+        end
+
+
+        if i < 5 then
+
+            texto_nome =
+                texto_nome .. " "
+
+        end
+
+    end
+
+
+    --------------------------------------------------
+    -- CENTRALIZA O NOME
+    --------------------------------------------------
+
+    local largura_nome =
+        #texto_nome * 4
+
+
+    local x_nome =
+        math.floor(
+            (64 - largura_nome) / 2
+        )
+
+
+    pico.output.draw_text(
+
+        {
+
+            x = x_nome,
+
+            y = 27
+
+        },
+
+        texto_nome
+
+    )
+
+
+    --------------------------------------------------
+    -- INDICADOR DA POSIÇÃO
+    --------------------------------------------------
+
+    local x_cursor =
+        x_nome + (posicao - 1) * 10
+
+
+    pico.output.draw_text(
+
+        {
+
+            x = x_cursor,
+
+            y = 35
+
+        },
+
+        "^"
 
     )
 
@@ -644,15 +881,18 @@ function utils.desenhar(
 
     pico.output.clear()
 
+
     utils.inimigos(
         pico,
         inimigos
     )
 
+
     utils.nave(
         pico,
         nave
     )
+
 
     if tiro then
 
@@ -663,10 +903,12 @@ function utils.desenhar(
 
     end
 
+
     utils.pontuacao(
         pico,
         pontos
     )
+
 
     if pausado then
 
@@ -680,7 +922,7 @@ end
 
 
 --------------------------------------------------
--- RETORNA A BIBLIOTECA
+-- RETORNA
 --------------------------------------------------
 
 return utils

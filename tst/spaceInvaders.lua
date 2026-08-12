@@ -1,4 +1,5 @@
 local pico = dofile("../src/pico.lua")
+
 local utils = dofile("utils.lua")
 
 
@@ -8,6 +9,7 @@ local utils = dofile("utils.lua")
 
 pico.init(true)
 
+pico.set.title("Space Invaders")
 pico.set.expert(true)
 
 
@@ -41,8 +43,11 @@ pico.set.size(
 --------------------------------------------------
 
 pico.set.font(
+
     "tiny.ttf",
+
     8
+
 )
 
 
@@ -52,14 +57,25 @@ pico.set.font(
 
 local estado = "inicio"
 
+-- inicio
+-- jogo
+-- novo_recorde
+-- game_over
+
 
 --------------------------------------------------
--- ESTADOS DAS TECLAS
+-- TECLAS
 --------------------------------------------------
 
 local z_antes = false
 local p_antes = false
 local y_antes = false
+
+local a_antes = false
+local d_antes = false
+
+local w_antes = false
+local s_antes = false
 
 
 --------------------------------------------------
@@ -90,10 +106,41 @@ local pontos = 0
 
 
 --------------------------------------------------
+-- MELHOR PONTUAÇÃO
+--------------------------------------------------
+
+local melhor_pontuacao = 0
+
+
+--------------------------------------------------
+-- NOME DO RECORDISTA
+--------------------------------------------------
+
+local melhor_nome = {
+
+    "A",
+    "A",
+    "A",
+    "A",
+    "A"
+
+}
+
+
+--------------------------------------------------
 -- PAUSE
 --------------------------------------------------
 
 local pausado = false
+
+
+--------------------------------------------------
+-- POSIÇÃO DO NOME
+--------------------------------------------------
+
+local nome = {}
+
+local nome_posicao = 1
 
 
 --------------------------------------------------
@@ -107,6 +154,16 @@ local NAVE_MAX_X =
 
 
 --------------------------------------------------
+-- LINHA DE DERROTA
+--
+-- Se um inimigo chegar nesta linha,
+-- o jogador perde.
+--------------------------------------------------
+
+local LINHA_DERROTA = 38
+
+
+--------------------------------------------------
 -- INIMIGOS
 --------------------------------------------------
 
@@ -115,11 +172,14 @@ local inimigos = {}
 
 --------------------------------------------------
 -- CRIA OS INIMIGOS
+--
+-- 7 colunas x 3 linhas
 --------------------------------------------------
 
 local function criar_inimigos()
 
     inimigos = {}
+
 
     for linha = 0, 2 do
 
@@ -143,7 +203,7 @@ end
 
 
 --------------------------------------------------
--- INICIALIZA OS INIMIGOS
+-- CRIA INIMIGOS
 --------------------------------------------------
 
 criar_inimigos()
@@ -161,68 +221,30 @@ local contador_inimigo = 0
 
 
 --------------------------------------------------
--- REINICIA A PARTIDA
+-- REINICIA O JOGO
 --------------------------------------------------
 
 local function reiniciar_jogo()
 
-    --------------------------------------------------
-    -- NAVE
-    --------------------------------------------------
-
     nave.x = 32
     nave.y = 42
 
-
-    --------------------------------------------------
-    -- TIRO
-    --------------------------------------------------
-
     tiro = nil
-
-
-    --------------------------------------------------
-    -- PONTUAÇÃO
-    --------------------------------------------------
 
     pontos = 0
 
-
-    --------------------------------------------------
-    -- PAUSE
-    --------------------------------------------------
-
     pausado = false
 
-
-    --------------------------------------------------
-    -- MOVIMENTO DOS INIMIGOS
-    --------------------------------------------------
-
     inimigo_direcao = 1
+
     contador_inimigo = 0
 
-
-    --------------------------------------------------
-    -- RECRIA OS INIMIGOS
-    --------------------------------------------------
+    z_antes = false
+    p_antes = false
 
     criar_inimigos()
 
-
-    --------------------------------------------------
-    -- VOLTA PARA O JOGO
-    --------------------------------------------------
-
     estado = "jogo"
-
-
-    --------------------------------------------------
-    -- Evita que o mesmo Y seja interpretado
-    -- novamente.
-    --------------------------------------------------
-
-    y_antes = true
 
 end
 
@@ -248,7 +270,7 @@ local function mover_inimigos()
 
 
     --------------------------------------------------
-    -- LIMITES DOS INIMIGOS
+    -- ENCONTRA OS LIMITES
     --------------------------------------------------
 
     local menor_x = 64
@@ -264,6 +286,7 @@ local function mover_inimigos()
 
             encontrou = true
 
+
             menor_x = math.min(
 
                 menor_x,
@@ -271,6 +294,7 @@ local function mover_inimigos()
                 enemy.x
 
             )
+
 
             maior_x = math.max(
 
@@ -301,6 +325,7 @@ local function mover_inimigos()
 
         inimigo_direcao = -1
 
+
         for _, enemy in ipairs(inimigos) do
 
             if enemy.vivo then
@@ -311,6 +336,7 @@ local function mover_inimigos()
             end
 
         end
+
 
         return
 
@@ -326,6 +352,7 @@ local function mover_inimigos()
 
         inimigo_direcao = 1
 
+
         for _, enemy in ipairs(inimigos) do
 
             if enemy.vivo then
@@ -336,6 +363,7 @@ local function mover_inimigos()
             end
 
         end
+
 
         return
 
@@ -361,6 +389,40 @@ end
 
 
 --------------------------------------------------
+-- VERIFICA LINHA DE DERROTA
+--------------------------------------------------
+
+local function verificar_linha_derrota()
+
+    for _, enemy in ipairs(inimigos) do
+
+        if enemy.vivo then
+
+            --------------------------------------------------
+            -- O inimigo possui 3 pixels de altura.
+            --------------------------------------------------
+
+            local parte_inferior =
+                enemy.y + 2
+
+
+            if parte_inferior >= LINHA_DERROTA then
+
+                return true
+
+            end
+
+        end
+
+    end
+
+
+    return false
+
+end
+
+
+--------------------------------------------------
 -- VERIFICA VITÓRIA
 --------------------------------------------------
 
@@ -376,32 +438,63 @@ local function verificar_vitoria()
 
     end
 
+
     return true
 
 end
 
 
 --------------------------------------------------
--- VERIFICA DERROTA
---
--- Se os inimigos chegarem na linha da nave,
--- o jogador perde.
+-- COLISÃO COM A NAVE
 --------------------------------------------------
 
 local function verificar_colisao_nave()
-
-    --------------------------------------------------
-    -- LINHA LIMITE
-    --------------------------------------------------
-
-    local LIMITE_DERROTA = 39
-
 
     for _, enemy in ipairs(inimigos) do
 
         if enemy.vivo then
 
-            if enemy.y + 2 >= LIMITE_DERROTA then
+            local inimigo_x1 =
+                enemy.x
+
+            local inimigo_x2 =
+                enemy.x + 2
+
+            local inimigo_y1 =
+                enemy.y
+
+            local inimigo_y2 =
+                enemy.y + 2
+
+
+            local nave_x1 =
+                nave.x - 3
+
+            local nave_x2 =
+                nave.x + 3
+
+            local nave_y1 =
+                nave.y
+
+            local nave_y2 =
+                nave.y + 4
+
+
+            local colisao =
+
+                inimigo_x1 <= nave_x2
+                and
+
+                inimigo_x2 >= nave_x1
+                and
+
+                inimigo_y1 <= nave_y2
+                and
+
+                inimigo_y2 >= nave_y1
+
+
+            if colisao then
 
                 return true
 
@@ -430,22 +523,34 @@ local function verificar_colisao()
     end
 
 
-    local tiro_x1 = tiro.x
-    local tiro_x2 = tiro.x
+    local tiro_x1 =
+        tiro.x
 
-    local tiro_y1 = tiro.y
-    local tiro_y2 = tiro.y + 1
+    local tiro_x2 =
+        tiro.x
+
+    local tiro_y1 =
+        tiro.y
+
+    local tiro_y2 =
+        tiro.y + 1
 
 
     for _, enemy in ipairs(inimigos) do
 
         if enemy.vivo then
 
-            local inimigo_x1 = enemy.x
-            local inimigo_x2 = enemy.x + 2
+            local inimigo_x1 =
+                enemy.x
 
-            local inimigo_y1 = enemy.y
-            local inimigo_y2 = enemy.y + 2
+            local inimigo_x2 =
+                enemy.x + 2
+
+            local inimigo_y1 =
+                enemy.y
+
+            local inimigo_y2 =
+                enemy.y + 2
 
 
             local colisao =
@@ -483,6 +588,328 @@ end
 
 
 --------------------------------------------------
+-- INICIA REGISTRO DO RECORDE
+--------------------------------------------------
+
+local function iniciar_novo_recorde()
+
+    nome = {
+
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+
+    }
+
+
+    nome_posicao = 1
+
+    estado = "novo_recorde"
+
+end
+
+
+--------------------------------------------------
+-- CONVERTE SCANCODE PARA LETRA
+--------------------------------------------------
+
+local function obter_letra()
+
+    local letras = {
+
+        { "A", pico.key.A },
+        { "B", pico.key.B },
+        { "C", pico.key.C },
+        { "D", pico.key.D },
+        { "E", pico.key.E },
+        { "F", pico.key.F },
+        { "G", pico.key.G },
+        { "H", pico.key.H },
+        { "I", pico.key.I },
+        { "J", pico.key.J },
+        { "K", pico.key.K },
+        { "L", pico.key.L },
+        { "M", pico.key.M },
+        { "N", pico.key.N },
+        { "O", pico.key.O },
+        { "P", pico.key.P },
+        { "Q", pico.key.Q },
+        { "R", pico.key.R },
+        { "S", pico.key.S },
+        { "T", pico.key.T },
+        { "U", pico.key.U },
+        { "V", pico.key.V },
+        { "W", pico.key.W },
+        { "X", pico.key.X },
+        { "Y", pico.key.Y },
+        { "Z", pico.key.Z }
+
+    }
+
+
+    for _, item in ipairs(letras) do
+
+        local letra = item[1]
+        local tecla = item[2]
+
+
+        if tecla
+        and pico.get.key(tecla) == 1 then
+
+            return letra
+
+        end
+
+    end
+
+
+    return nil
+
+end
+
+
+--------------------------------------------------
+-- ESCREVE UMA LETRA
+--------------------------------------------------
+
+local function atualizar_nome()
+
+    local letra =
+        obter_letra()
+
+
+    if letra then
+
+        nome[nome_posicao] =
+            letra
+
+    end
+
+end
+
+
+--------------------------------------------------
+-- LOOP DA TELA DE NOVO RECORDE
+--------------------------------------------------
+
+local function atualizar_novo_recorde()
+
+    --------------------------------------------------
+    -- A
+    --------------------------------------------------
+
+    local a_agora =
+        pico.get.key(pico.key.A) == 1
+
+
+    if a_agora
+    and not a_antes then
+
+        nome_posicao =
+            math.max(
+                1,
+                nome_posicao - 1
+            )
+
+    end
+
+
+    a_antes =
+        a_agora
+
+
+    --------------------------------------------------
+    -- D
+    --------------------------------------------------
+
+    local d_agora =
+        pico.get.key(pico.key.D) == 1
+
+
+    if d_agora
+    and not d_antes then
+
+        nome_posicao =
+            math.min(
+                5,
+                nome_posicao + 1
+            )
+
+    end
+
+
+    d_antes =
+        d_agora
+
+
+    --------------------------------------------------
+    -- W
+    --------------------------------------------------
+
+    local w_agora =
+        pico.get.key(pico.key.W) == 1
+
+
+    if w_agora
+    and not w_antes then
+
+        local atual =
+            nome[nome_posicao]
+
+
+        if atual then
+
+            local codigo =
+                string.byte(atual)
+
+
+            codigo =
+                codigo + 1
+
+
+            if codigo > string.byte("Z") then
+
+                codigo =
+                    string.byte("A")
+
+            end
+
+
+            nome[nome_posicao] =
+                string.char(codigo)
+
+        else
+
+            nome[nome_posicao] =
+                "A"
+
+        end
+
+    end
+
+
+    w_antes =
+        w_agora
+
+
+    --------------------------------------------------
+    -- S
+    --------------------------------------------------
+
+    local s_agora =
+        pico.get.key(pico.key.S) == 1
+
+
+    if s_agora
+    and not s_antes then
+
+        local atual =
+            nome[nome_posicao]
+
+
+        if atual then
+
+            local codigo =
+                string.byte(atual)
+
+
+            codigo =
+                codigo - 1
+
+
+            if codigo < string.byte("A") then
+
+                codigo =
+                    string.byte("Z")
+
+            end
+
+
+            nome[nome_posicao] =
+                string.char(codigo)
+
+        else
+
+            nome[nome_posicao] =
+                "Z"
+
+        end
+
+    end
+
+
+    s_antes =
+        s_agora
+
+
+    --------------------------------------------------
+    -- Z CONFIRMA
+    --------------------------------------------------
+
+    local z_agora =
+        pico.get.key(pico.key.Z) == 1
+
+
+    if z_agora
+    and not z_antes then
+
+        --------------------------------------------------
+        -- Se a posição estiver vazia,
+        -- coloca A automaticamente.
+        --------------------------------------------------
+
+        if not nome[nome_posicao] then
+
+            nome[nome_posicao] =
+                "A"
+
+        end
+
+
+        --------------------------------------------------
+        -- Avança para a próxima posição
+        --------------------------------------------------
+
+        if nome_posicao < 5 then
+
+            nome_posicao =
+                nome_posicao + 1
+
+        else
+
+            --------------------------------------------------
+            -- TERMINOU O NOME
+            --------------------------------------------------
+
+            for i = 1, 5 do
+
+                melhor_nome[i] =
+                    nome[i]
+
+            end
+
+
+            melhor_pontuacao =
+                pontos
+
+
+            estado =
+                "game_over"
+
+        end
+
+    end
+
+
+    z_antes =
+        z_agora
+
+end
+
+
+--------------------------------------------------
 -- TELA INICIAL
 --------------------------------------------------
 
@@ -504,6 +931,7 @@ while true do
 
     if estado == "inicio" then
 
+
         local z_agora =
             pico.get.key(pico.key.Z) == 1
 
@@ -511,9 +939,8 @@ while true do
         if z_agora
         and not z_antes then
 
-            estado = "jogo"
-
-            z_antes = true
+            estado =
+                "jogo"
 
         end
 
@@ -532,6 +959,7 @@ while true do
     --------------------------------------------------
 
     elseif estado == "jogo" then
+
 
         --------------------------------------------------
         -- PAUSE
@@ -654,21 +1082,49 @@ while true do
 
 
             --------------------------------------------------
-            -- VERIFICA DERROTA
+            -- VITÓRIA
             --------------------------------------------------
 
-            if verificar_colisao_nave() then
+            if verificar_vitoria() then
 
-                estado = "derrota"
+                estado =
+                    "game_over"
 
 
             --------------------------------------------------
-            -- VERIFICA VITÓRIA
+            -- DERROTA PELA LINHA
             --------------------------------------------------
 
-            elseif verificar_vitoria() then
+            elseif verificar_linha_derrota() then
 
-                estado = "derrota"
+                if pontos > melhor_pontuacao then
+
+                    iniciar_novo_recorde()
+
+                else
+
+                    estado =
+                        "game_over"
+
+                end
+
+
+            --------------------------------------------------
+            -- DERROTA POR COLISÃO COM A NAVE
+            --------------------------------------------------
+
+            elseif verificar_colisao_nave() then
+
+                if pontos > melhor_pontuacao then
+
+                    iniciar_novo_recorde()
+
+                else
+
+                    estado =
+                        "game_over"
+
+                end
 
             end
 
@@ -697,23 +1153,35 @@ while true do
 
 
     --------------------------------------------------
-    -- GAME OVER
+    -- NOVO RECORDE
     --------------------------------------------------
 
-    elseif estado == "derrota" then
+    elseif estado == "novo_recorde" then
 
 
-        utils.game_over(
+        atualizar_novo_recorde()
+
+
+        utils.novo_recorde(
 
             pico,
 
-            pontos
+            nome,
+
+            nome_posicao
 
         )
 
 
+    --------------------------------------------------
+    -- GAME OVER
+    --------------------------------------------------
+
+    elseif estado == "game_over" then
+
+
         --------------------------------------------------
-        -- Y PARA JOGAR NOVAMENTE
+        -- Y REINICIA
         --------------------------------------------------
 
         local y_agora =
@@ -730,6 +1198,15 @@ while true do
 
         y_antes =
             y_agora
+
+
+        utils.game_over(
+
+            pico,
+
+            pontos
+
+        )
 
     end
 
