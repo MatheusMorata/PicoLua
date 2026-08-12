@@ -8,6 +8,7 @@ local utils = dofile("utils.lua")
 
 pico.init(true)
 
+pico.set.font("tiny.ttf", 12)
 
 --------------------------------------------------
 -- NAVE
@@ -18,70 +19,109 @@ local nave = {
     y = 42
 }
 
-local NAVE_MIN_X = 3
-local NAVE_MAX_X = 64 - 1 - 3
-
 
 --------------------------------------------------
 -- TIRO
 --------------------------------------------------
 
 local tiro = nil
+
+
+--------------------------------------------------
+-- PONTUAÇÃO
+--------------------------------------------------
+
+local pontos = 0
+
+
+--------------------------------------------------
+-- CONTROLE DO DISPARO
+--------------------------------------------------
+
 local z_antes = false
+
+
+--------------------------------------------------
+-- LIMITES DA NAVE
+--------------------------------------------------
+
+-- A nave possui largura de -3 até +3.
+local NAVE_MIN_X = 3
+local NAVE_MAX_X = 64 - 1 - 3
 
 
 --------------------------------------------------
 -- INIMIGOS
 --------------------------------------------------
 
-local inimigos_x = 0
-local inimigos_y = 0
-
-local inimigos_direcao = 1
-
--- Quanto maior, mais lento
-local contador_inimigos = 0
-local intervalo_inimigos = 20
+local inimigos = {}
 
 
 --------------------------------------------------
--- MATRIZ DE INIMIGOS
---
--- 3 linhas x 7 colunas
+-- CRIA 7 COLUNAS X 3 LINHAS
 --------------------------------------------------
 
-local vivos = {}
+for linha = 0, 2 do
 
-for linha = 1, 3 do
+    for coluna = 0, 6 do
 
-    vivos[linha] = {}
+        inimigos[#inimigos + 1] = {
 
-    for coluna = 1, 7 do
-        vivos[linha][coluna] = true
+            x = 5 + coluna * 9,
+
+            y = 6 + linha * 5,
+
+            vivo = true
+        }
+
     end
 
 end
 
 
 --------------------------------------------------
--- LIMITES DOS INIMIGOS
+-- MOVIMENTO DOS INIMIGOS
 --------------------------------------------------
 
-local INIMIGOS_MIN_X = 5
-local INIMIGOS_MAX_X = 5 + (6 * 9) + 2
+-- 1 = direita
+-- -1 = esquerda
+--
+-- Começamos indo para a esquerda.
+
+local inimigo_direcao = -1
 
 
 --------------------------------------------------
--- FUNÇÃO PARA DESENHAR
+-- VELOCIDADE
+--------------------------------------------------
+
+-- Tempo entre cada movimento dos inimigos,
+-- em milissegundos.
+--
+-- 500 = lento
+-- 300 = médio
+-- 100 = rápido
+
+local inimigo_intervalo = 500
+
+
+--------------------------------------------------
+-- CONTROLE DO TEMPO
+--------------------------------------------------
+
+local ultimo_movimento = pico.get.ticks()
+
+
+--------------------------------------------------
+-- DESENHA A PRIMEIRA CENA
 --------------------------------------------------
 
 utils.desenhar(
     pico,
     nave,
+    inimigos,
     tiro,
-    inimigos_x,
-    inimigos_y,
-    vivos
+    pontos
 )
 
 
@@ -93,7 +133,7 @@ while true do
 
 
     --------------------------------------------------
-    -- MOVIMENTO DA NAVE
+    -- MOVIMENTO DA NAVE PARA A ESQUERDA
     --------------------------------------------------
 
     if pico.get.key(pico.key.A) == 1 then
@@ -105,6 +145,10 @@ while true do
 
     end
 
+
+    --------------------------------------------------
+    -- MOVIMENTO DA NAVE PARA A DIREITA
+    --------------------------------------------------
 
     if pico.get.key(pico.key.D) == 1 then
 
@@ -123,16 +167,26 @@ while true do
     local z_agora =
         pico.get.key(pico.key.Z) == 1
 
+
+    --------------------------------------------------
+    -- CRIA UM NOVO TIRO
+    --
+    -- Só dispara uma vez quando Z é pressionado.
+    --------------------------------------------------
+
     if z_agora
-       and not z_antes
-       and not tiro then
+        and not z_antes
+        and not tiro then
 
         tiro = {
+
             x = nave.x,
+
             y = nave.y - 1
         }
 
     end
+
 
     z_antes = z_agora
 
@@ -145,122 +199,153 @@ while true do
 
         tiro.y = tiro.y - 2
 
-        if tiro.y < 0 then
+
+        --------------------------------------------------
+        -- VERIFICA COLISÃO
+        --------------------------------------------------
+
+        if utils.colisao_tiro_inimigos(
+            tiro,
+            inimigos
+        ) then
+
+            --------------------------------------------------
+            -- ACERTOU UM INIMIGO
+            --------------------------------------------------
+
+            pontos = pontos + 10
+
             tiro = nil
+
+
+        --------------------------------------------------
+        -- TIRO SAIU DA TELA
+        --------------------------------------------------
+
+        elseif tiro.y < 0 then
+
+            tiro = nil
+
         end
 
     end
 
 
     --------------------------------------------------
-    -- COLISÃO DO TIRO
+    -- TEMPO ATUAL
     --------------------------------------------------
 
-    if tiro then
-
-        local tiro_rect = {
-            x = tiro.x,
-            y = tiro.y,
-            w = 1,
-            h = 2
-        }
-
-
-        local acertou = false
-
-
-        for linha = 1, 3 do
-
-            for coluna = 1, 7 do
-
-                if vivos[linha][coluna] then
-
-                    local inimigo_rect = {
-                        x = 5 + (coluna - 1) * 9 + inimigos_x,
-                        y = 6 + (linha - 1) * 5 + inimigos_y,
-                        w = 3,
-                        h = 3
-                    }
-
-
-                    if pico_rect_vs_rect(
-                        tiro_rect,
-                        inimigo_rect
-                    ) then
-
-                        -- Remove o inimigo
-                        vivos[linha][coluna] = false
-
-                        -- Remove o tiro
-                        tiro = nil
-
-                        acertou = true
-
-                        break
-
-                    end
-
-                end
-
-            end
-
-
-            if acertou then
-                break
-            end
-
-        end
-
-    end
+    local agora =
+        pico.get.ticks()
 
 
     --------------------------------------------------
     -- MOVIMENTO DOS INIMIGOS
     --------------------------------------------------
 
-    contador_inimigos =
-        contador_inimigos + 1
-
-
-    if contador_inimigos >= intervalo_inimigos then
-
-        contador_inimigos = 0
-
-        inimigos_x =
-            inimigos_x +
-            inimigos_direcao
+    if agora - ultimo_movimento
+        >= inimigo_intervalo then
 
 
         --------------------------------------------------
-        -- BORDA DIREITA
+        -- ATUALIZA O TEMPO
         --------------------------------------------------
 
-        if inimigos_x + INIMIGOS_MAX_X >= 64 then
+        ultimo_movimento = agora
 
-            inimigos_x =
-                64 - INIMIGOS_MAX_X
 
-            inimigos_direcao = -1
+        --------------------------------------------------
+        -- VERIFICA SE ALGUM INIMIGO
+        -- VAI SAIR DA TELA
+        --------------------------------------------------
 
-            inimigos_y =
-                inimigos_y + 1
+        local pode_mover = true
+
+
+        for _, inimigo in ipairs(inimigos) do
+
+            if inimigo.vivo then
+
+                local proximo_x =
+                    inimigo.x + inimigo_direcao
+
+
+                --------------------------------------------------
+                -- LIMITE ESQUERDO
+                --------------------------------------------------
+
+                if proximo_x < 0 then
+
+                    pode_mover = false
+
+                    break
+
+                end
+
+
+                --------------------------------------------------
+                -- LIMITE DIREITO
+                --------------------------------------------------
+
+                if proximo_x + 2 >= 64 then
+
+                    pode_mover = false
+
+                    break
+
+                end
+
+            end
 
         end
 
 
         --------------------------------------------------
-        -- BORDA ESQUERDA
+        -- MOVE OS INIMIGOS
         --------------------------------------------------
 
-        if inimigos_x + INIMIGOS_MIN_X <= 0 then
+        if pode_mover then
 
-            inimigos_x =
-                -INIMIGOS_MIN_X
+            for _, inimigo in ipairs(inimigos) do
 
-            inimigos_direcao = 1
+                if inimigo.vivo then
 
-            inimigos_y =
-                inimigos_y + 1
+                    inimigo.x =
+                        inimigo.x + inimigo_direcao
+
+                end
+
+            end
+
+
+        --------------------------------------------------
+        -- CHEGOU NA BORDA
+        --------------------------------------------------
+
+        else
+
+            --------------------------------------------------
+            -- INVERTE A DIREÇÃO
+            --------------------------------------------------
+
+            inimigo_direcao =
+                -inimigo_direcao
+
+
+            --------------------------------------------------
+            -- DESCE UMA LINHA
+            --------------------------------------------------
+
+            for _, inimigo in ipairs(inimigos) do
+
+                if inimigo.vivo then
+
+                    inimigo.y =
+                        inimigo.y + 1
+
+                end
+
+            end
 
         end
 
@@ -268,21 +353,20 @@ while true do
 
 
     --------------------------------------------------
-    -- DESENHA
+    -- DESENHA A CENA
     --------------------------------------------------
 
     utils.desenhar(
         pico,
         nave,
+        inimigos,
         tiro,
-        inimigos_x,
-        inimigos_y,
-        vivos
+        pontos
     )
 
 
     --------------------------------------------------
-    -- CONTROLE DO TEMPO
+    -- DELAY DO LOOP
     --------------------------------------------------
 
     pico.input.delay(16)
@@ -291,7 +375,7 @@ end
 
 
 --------------------------------------------------
--- FINALIZA
+-- FINALIZAÇÃO
 --------------------------------------------------
 
 pico.init(false)

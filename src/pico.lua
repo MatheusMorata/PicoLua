@@ -600,6 +600,10 @@ local function set_size(phy, log)
 end
 
 -- GETTERS
+function pico.get.ticks()
+    return SDL.getTicks()
+end
+
 function pico.get.key(key)
     local state = SDL.getKeyboardState()
     return state[key] and 1 or 0
@@ -744,6 +748,50 @@ end
 
 
 -- OUTPUT
+function pico.output.draw_text_ext(pos, text, size)
+
+    if text == nil or text == "" then
+        return
+    end
+
+    assert(
+        S.font.ttf ~= nil,
+        "fonte não configurada"
+    )
+
+    -- Cria uma superfície com o texto
+    local surface, err = S.font.ttf:renderText(
+        text,
+        "blended",
+        S.color.draw
+    )
+
+    assert(
+        surface ~= nil,
+        err or "erro ao renderizar texto"
+    )
+
+    -- Cria textura a partir da superfície
+    local tex = REN:createTextureFromSurface(surface)
+
+    assert(
+        tex ~= nil,
+        "erro ao criar textura do texto"
+    )
+
+    -- Desenha usando o mesmo sistema de:
+    -- escala, âncora, rotação, flip e scroll
+    output_draw_tex(pos, tex, size)
+
+    -- Libera os recursos temporários
+    tex = nil
+    surface = nil
+end
+
+function pico.output.draw_text(pos, text)
+    pico.output.draw_text_ext(pos, text, PICO_SIZE_KEEP)
+end
+
 function pico.output.draw_pixel(pos)
     REN:drawPoint({x = X(pos.x, 1), y = Y(pos.y, 1)})
     output_present(false)
