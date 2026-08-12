@@ -356,10 +356,6 @@ function utils.pontuacao(
     pontos
 )
 
-    --------------------------------------------------
-    -- CANTO SUPERIOR DIREITO
-    --------------------------------------------------
-
     pico.set.anchor_draw({
 
         x = PICO_RIGHT,

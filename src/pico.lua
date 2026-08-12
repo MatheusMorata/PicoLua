@@ -759,7 +759,7 @@ function pico.output.draw_text_ext(pos, text, size)
     -- Cria uma superfície com o texto
     local surface, err = S.font.ttf:renderText(
         text,
-        "blended",
+        "solid",
         S.color.draw
     )
 

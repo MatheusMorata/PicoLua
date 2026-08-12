@@ -8,7 +8,6 @@ local utils = dofile("utils.lua")
 
 pico.init(true)
 
--- Modo expert para controlar manualmente o desenho.
 pico.set.expert(true)
 
 
@@ -38,8 +37,7 @@ pico.set.size(
 -- tiny.ttf deve estar no mesmo diretório
 -- deste arquivo.
 
-pico.set.font("tiny.ttf", 12)
-
+pico.set.font("tiny.ttf", 7)
 
 --------------------------------------------------
 -- NAVE
