@@ -414,13 +414,13 @@ local function event_from_sdl(e, xp)
 
         local state = SDL.getKeyboardState()
 
-        if not state[SDL.scancode.LCtrl] and
-           not state[SDL.scancode.RCtrl] then
+        local lctrl = SDL.scancode.LCtrl and state[SDL.scancode.LCtrl]
+        local rctrl = SDL.scancode.RCtrl and state[SDL.scancode.RCtrl]
+
+        if not lctrl and not rctrl then
             goto check_event
         end
-
-        local key = e.keysym.sym
-
+        
         if key == SDL.key._0 then
 
             pico.set.zoom({

@@ -37,7 +37,9 @@ function utils.inimigos(pico)
 
 end
 
-function utils.nave(pico)
+-- Nave triangular pequena
+-- nave = { x = <centro horizontal>, y = <y da ponta> }
+function utils.nave(pico, nave)
 
     pico.set.color_draw({
         r = 0,
@@ -46,36 +48,37 @@ function utils.nave(pico)
         a = 255
     })
 
-    -- Nave triangular pequena
-    -- Centralizada em x = 32
+    local cx, cy = nave.x, nave.y
+
+    -- Deslocamentos relativos ao centro (originalmente centrado em x=32)
     local pixels = {
         -- ponta
-        { x = 32, y = 42 },
+        { x = cx + 0, y = cy + 0 },
 
         -- segunda linha
-        { x = 31, y = 43 },
-        { x = 32, y = 43 },
-        { x = 33, y = 43 },
+        { x = cx - 1, y = cy + 1 },
+        { x = cx + 0, y = cy + 1 },
+        { x = cx + 1, y = cy + 1 },
 
         -- terceira linha
-        { x = 30, y = 44 },
-        { x = 31, y = 44 },
-        { x = 32, y = 44 },
-        { x = 33, y = 44 },
-        { x = 34, y = 44 },
+        { x = cx - 2, y = cy + 2 },
+        { x = cx - 1, y = cy + 2 },
+        { x = cx + 0, y = cy + 2 },
+        { x = cx + 1, y = cy + 2 },
+        { x = cx + 2, y = cy + 2 },
 
         -- base
-        { x = 29, y = 45 },
-        { x = 30, y = 45 },
-        { x = 31, y = 45 },
-        { x = 32, y = 45 },
-        { x = 33, y = 45 },
-        { x = 34, y = 45 },
-        { x = 35, y = 45 },
+        { x = cx - 3, y = cy + 3 },
+        { x = cx - 2, y = cy + 3 },
+        { x = cx - 1, y = cy + 3 },
+        { x = cx + 0, y = cy + 3 },
+        { x = cx + 1, y = cy + 3 },
+        { x = cx + 2, y = cy + 3 },
+        { x = cx + 3, y = cy + 3 },
 
         -- motores
-        { x = 30, y = 46 },
-        { x = 34, y = 46 },
+        { x = cx - 2, y = cy + 4 },
+        { x = cx + 2, y = cy + 4 },
     }
 
     pico.output.draw_pixels(pixels, #pixels)
@@ -105,6 +108,18 @@ function utils.tiro(pico, tiro)
     -- restaura âncora padrão (centro), usada por nave/inimigos
     pico.set.anchor_draw({ x = PICO_CENTER, y = PICO_MIDDLE })
 
+end
+
+-- Desenha a cena inteira: limpa, nave, inimigos e tiro (se existir)
+function utils.desenhar(pico, nave, tiro)
+    pico.output.clear()
+
+    utils.nave(pico, nave)
+    utils.inimigos(pico)
+
+    if tiro then
+        utils.tiro(pico, tiro)
+    end
 end
 
 return utils
