@@ -1,6 +1,6 @@
 local utils = {}
 
-function utils.inimigos(pico)
+function utils.inimigos(pico, deslocamento_x, deslocamento_y)
 
     pico.set.color_draw({
         r = 255,
@@ -11,25 +11,28 @@ function utils.inimigos(pico)
 
     local pixels = {}
 
-    -- Cada inimigo possui 3x3 pixels
     local function inimigo(x, y)
+
         for py = 0, 2 do
             for px = 0, 2 do
                 pixels[#pixels + 1] = {
-                    x = x + px,
-                    y = y + py
+                    x = x + px + deslocamento_x,
+                    y = y + py + deslocamento_y
                 }
             end
         end
+
     end
 
     -- 7 colunas x 3 linhas
     for linha = 0, 2 do
         for coluna = 0, 6 do
+
             inimigo(
                 5 + coluna * 9,
                 6 + linha * 5
             )
+
         end
     end
 
@@ -111,15 +114,22 @@ function utils.tiro(pico, tiro)
 end
 
 -- Desenha a cena inteira: limpa, nave, inimigos e tiro (se existir)
-function utils.desenhar(pico, nave, tiro)
+function utils.desenhar(pico, nave, tiro, inimigos_x, inimigos_y)
+
     pico.output.clear()
 
     utils.nave(pico, nave)
-    utils.inimigos(pico)
+
+    utils.inimigos(
+        pico,
+        inimigos_x,
+        inimigos_y
+    )
 
     if tiro then
         utils.tiro(pico, tiro)
     end
+
 end
 
 return utils
