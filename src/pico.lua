@@ -222,15 +222,7 @@ end
 
 function output_draw_tex(pos, tex, size)
 
-    local rct = {}
-
-    local _, _, w, h = tex:query()
-
-    rct.x = 0
-    rct.y = 0
-    rct.w = w
-    rct.h = h
-
+    local _, _, tex_w, tex_h = tex:query()
 
     local crp = {
         x = S.crop.x,
@@ -239,85 +231,116 @@ function output_draw_tex(pos, tex, size)
         h = S.crop.h
     }
 
-    if S.crop.w == 0 then
-        crp.w = rct.w
+    if crp.w == 0 then
+        crp.w = tex_w
     end
 
-    if S.crop.h == 0 then
-        crp.h = rct.h
+    if crp.h == 0 then
+        crp.h = tex_h
     end
 
+    local draw_w = crp.w
+    local draw_h = crp.h
 
-    -- SIZE
+
     if size.x == 0 and size.y == 0 then
-        -- tamanho normal da imagem
-        rct.w = crp.w
-        rct.h = crp.h
+
+        draw_w = crp.w
+        draw_h = crp.h
 
     elseif size.x == 0 then
-        -- ajusta largura baseada na altura
-        rct.w = rct.w * (size.y / rct.h)
-        rct.h = size.y
+
+        draw_w =
+            crp.w * (size.y / crp.h)
+
+        draw_h = size.y
 
     elseif size.y == 0 then
-        -- ajusta altura baseada na largura
-        rct.h = rct.h * (size.x / rct.w)
-        rct.w = size.x
+
+        draw_h =
+            crp.h * (size.x / crp.w)
+
+        draw_w = size.x
 
     else
-        rct.w = size.x
-        rct.h = size.y
+
+        draw_w = size.x
+        draw_h = size.y
+
     end
 
 
-    -- SCALE
-    rct.w = (S.scale.x * rct.w) / 100
-    rct.h = (S.scale.y * rct.h) / 100
+    draw_w =
+        (S.scale.x * draw_w) / 100
+
+    draw_h =
+        (S.scale.y * draw_h) / 100
 
 
-    -- ANCHOR / PAN
-    rct.x = X(pos.x, rct.w)
-    rct.y = Y(pos.y, rct.h)
+    local rct = {
 
+        x = X(pos.x, draw_w),
 
-    -- ROTATE
+        y = Y(pos.y, draw_h),
+
+        w = draw_w,
+
+        h = draw_h
+
+    }
+
     local rot = {
-        x = (S.anchor.rotate.x * rct.w) / 100,
-        y = (S.anchor.rotate.y * rct.h) / 100
+
+        x =
+            (S.anchor.rotate.x * rct.w) / 100,
+
+        y =
+            (S.anchor.rotate.y * rct.h) / 100
+
     }
 
 
-    -- FLIP
     local flip
 
     if S.flip.x and S.flip.y then
-        S.angle = S.angle + 180
-    end
 
-    if S.flip.y then
+        flip = SDL.rendererFlip.Both
+
+    elseif S.flip.y then
+
         flip = SDL.rendererFlip.Vertical
 
     elseif S.flip.x then
+
         flip = SDL.rendererFlip.Horizontal
 
     else
+
         flip = SDL.rendererFlip.None
+
     end
 
 
     REN:copyEx({
+
         texture = tex,
+
         source = crp,
+
         destination = rct,
+
         angle = S.angle,
+
         center = rot,
+
         flip = flip
+
     })
 
 
     output_present(0)
-end
 
+end
 
 local function output_clear()
     REN:setDrawColor(S.color.clear)
@@ -756,7 +779,10 @@ function pico.output.draw_text_ext(pos, text, size)
         "fonte não configurada"
     )
 
-    -- Cria uma superfície com o texto
+    --------------------------------------------------
+    -- RENDERIZA O TEXTO
+    --------------------------------------------------
+
     local surface, err = S.font.ttf:renderText(
         text,
         "solid",
@@ -768,7 +794,10 @@ function pico.output.draw_text_ext(pos, text, size)
         err or "erro ao renderizar texto"
     )
 
-    -- Cria textura a partir da superfície
+    --------------------------------------------------
+    -- CRIA A TEXTURA
+    --------------------------------------------------
+
     local tex = REN:createTextureFromSurface(surface)
 
     assert(
@@ -776,13 +805,55 @@ function pico.output.draw_text_ext(pos, text, size)
         "erro ao criar textura do texto"
     )
 
-    -- Desenha usando o mesmo sistema de:
-    -- escala, âncora, rotação, flip e scroll
-    output_draw_tex(pos, tex, size)
+    --------------------------------------------------
+    -- TAMANHO ORIGINAL DA FONTE
+    --------------------------------------------------
 
-    -- Libera os recursos temporários
+    local _, _, w, h = tex:query()
+
+    --------------------------------------------------
+    -- DESENHA A TEXTURA
+    --------------------------------------------------
+
+    if size.x == 0 and size.y == 0 then
+
+        output_draw_tex(
+            pos,
+            tex,
+            {
+                x = w,
+                y = h
+            }
+        )
+
+    else
+
+        output_draw_tex(
+            pos,
+            tex,
+            size
+        )
+
+    end
+
+    --------------------------------------------------
+    -- LIBERA
+    --------------------------------------------------
+
     tex = nil
     surface = nil
+
+end
+
+
+function pico.output.draw_text(pos, text)
+
+    pico.output.draw_text_ext(
+        pos,
+        text,
+        PICO_SIZE_KEEP
+    )
+
 end
 
 function pico.output.draw_text(pos, text)

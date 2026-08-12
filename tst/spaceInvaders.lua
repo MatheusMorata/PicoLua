@@ -15,9 +15,6 @@ pico.set.expert(true)
 -- TAMANHO DA JANELA
 --------------------------------------------------
 
--- Resolução lógica: 64 x 48
--- Janela física: 640 x 480
-
 pico.set.size(
     {
         x = 640,
@@ -34,10 +31,37 @@ pico.set.size(
 -- FONTE
 --------------------------------------------------
 
--- tiny.ttf deve estar no mesmo diretório
--- deste arquivo.
+pico.set.font(
+    "tiny.ttf",
+    8
+)
 
-pico.set.font("tiny.ttf", 7)
+
+--------------------------------------------------
+-- ESTADO DO JOGO
+--
+-- inicio
+-- jogo
+-- vitoria
+-- derrota
+--------------------------------------------------
+
+local estado = "inicio"
+
+
+--------------------------------------------------
+-- ESTADO DA TECLA Z
+--------------------------------------------------
+
+local z_antes = false
+
+
+--------------------------------------------------
+-- ESTADO DA TECLA P
+--------------------------------------------------
+
+local p_antes = false
+
 
 --------------------------------------------------
 -- NAVE
@@ -68,25 +92,16 @@ local pontos = 0
 --------------------------------------------------
 
 local pausado = false
-local p_antes = false
-
-
---------------------------------------------------
--- ESTADO DA TECLA Z
---------------------------------------------------
-
-local z_antes = false
 
 
 --------------------------------------------------
 -- LIMITES DA NAVE
 --------------------------------------------------
 
--- A nave possui largura de -3 até +3
--- em relação ao centro.
-
 local NAVE_MIN_X = 3
-local NAVE_MAX_X = 64 - 1 - 3
+
+local NAVE_MAX_X =
+    64 - 1 - 3
 
 
 --------------------------------------------------
@@ -98,6 +113,8 @@ local inimigos = {}
 
 --------------------------------------------------
 -- CRIA OS INIMIGOS
+--
+-- 7 colunas x 3 linhas
 --------------------------------------------------
 
 for linha = 0, 2 do
@@ -124,9 +141,6 @@ end
 --------------------------------------------------
 
 local inimigo_direcao = 1
-
--- Quanto MAIOR o valor,
--- mais LENTO o movimento.
 
 local INIMIGO_INTERVALO = 20
 
@@ -160,6 +174,7 @@ local function mover_inimigos()
     --------------------------------------------------
 
     local menor_x = 64
+
     local maior_x = 0
 
     local encontrou = false
@@ -171,10 +186,12 @@ local function mover_inimigos()
 
             encontrou = true
 
+
             menor_x = math.min(
                 menor_x,
                 enemy.x
             )
+
 
             maior_x = math.max(
                 maior_x,
@@ -268,6 +285,107 @@ end
 
 
 --------------------------------------------------
+-- VERIFICA SE TODOS OS INIMIGOS FORAM
+-- DESTRUÍDOS
+--------------------------------------------------
+
+local function verificar_vitoria()
+
+    for _, enemy in ipairs(inimigos) do
+
+        if enemy.vivo then
+
+            return false
+
+        end
+
+    end
+
+
+    return true
+
+end
+
+
+--------------------------------------------------
+-- VERIFICA COLISÃO DO INIMIGO COM A NAVE
+--------------------------------------------------
+
+local function verificar_colisao_nave()
+
+    for _, enemy in ipairs(inimigos) do
+
+        if enemy.vivo then
+
+            --------------------------------------------------
+            -- ÁREA DO INIMIGO
+            --------------------------------------------------
+
+            local inimigo_x1 =
+                enemy.x
+
+            local inimigo_x2 =
+                enemy.x + 2
+
+            local inimigo_y1 =
+                enemy.y
+
+            local inimigo_y2 =
+                enemy.y + 2
+
+
+            --------------------------------------------------
+            -- ÁREA DA NAVE
+            --------------------------------------------------
+
+            local nave_x1 =
+                nave.x - 3
+
+            local nave_x2 =
+                nave.x + 3
+
+            local nave_y1 =
+                nave.y
+
+            local nave_y2 =
+                nave.y + 4
+
+
+            --------------------------------------------------
+            -- TESTE DE COLISÃO
+            --------------------------------------------------
+
+            local colisao =
+
+                inimigo_x1 <= nave_x2
+                and
+
+                inimigo_x2 >= nave_x1
+                and
+
+                inimigo_y1 <= nave_y2
+                and
+
+                inimigo_y2 >= nave_y1
+
+
+            if colisao then
+
+                return true
+
+            end
+
+        end
+
+    end
+
+
+    return false
+
+end
+
+
+--------------------------------------------------
 -- COLISÃO DO TIRO
 --------------------------------------------------
 
@@ -282,11 +400,17 @@ local function verificar_colisao()
     -- ÁREA DO TIRO
     --------------------------------------------------
 
-    local tiro_x1 = tiro.x
-    local tiro_x2 = tiro.x
+    local tiro_x1 =
+        tiro.x
 
-    local tiro_y1 = tiro.y
-    local tiro_y2 = tiro.y + 1
+    local tiro_x2 =
+        tiro.x
+
+    local tiro_y1 =
+        tiro.y
+
+    local tiro_y2 =
+        tiro.y + 1
 
 
     --------------------------------------------------
@@ -297,16 +421,21 @@ local function verificar_colisao()
 
         if enemy.vivo then
 
-
             --------------------------------------------------
             -- ÁREA DO INIMIGO
             --------------------------------------------------
 
-            local inimigo_x1 = enemy.x
-            local inimigo_x2 = enemy.x + 2
+            local inimigo_x1 =
+                enemy.x
 
-            local inimigo_y1 = enemy.y
-            local inimigo_y2 = enemy.y + 2
+            local inimigo_x2 =
+                enemy.x + 2
+
+            local inimigo_y1 =
+                enemy.y
+
+            local inimigo_y2 =
+                enemy.y + 2
 
 
             --------------------------------------------------
@@ -315,14 +444,19 @@ local function verificar_colisao()
 
             local colisao =
 
-                tiro_x1 <= inimigo_x2 and
-                tiro_x2 >= inimigo_x1 and
-                tiro_y1 <= inimigo_y2 and
+                tiro_x1 <= inimigo_x2
+                and
+
+                tiro_x2 >= inimigo_x1
+                and
+
+                tiro_y1 <= inimigo_y2
+                and
+
                 tiro_y2 >= inimigo_y1
 
 
             if colisao then
-
 
                 --------------------------------------------------
                 -- DESTRÓI O INIMIGO
@@ -358,16 +492,11 @@ end
 
 
 --------------------------------------------------
--- DESENHO INICIAL
+-- DESENHA A TELA INICIAL UMA VEZ
 --------------------------------------------------
 
-utils.desenhar(
-    pico,
-    nave,
-    inimigos,
-    tiro,
-    pontos,
-    pausado
+utils.tela_inicio(
+    pico
 )
 
 
@@ -379,100 +508,207 @@ while true do
 
 
     --------------------------------------------------
-    -- TECLA P
+    -- TELA INICIAL
     --------------------------------------------------
 
-    local p_agora =
-        pico.get.key(pico.key.P) == 1
-
-
-    if p_agora and not p_antes then
-
-        pausado =
-            not pausado
-
-    end
-
-
-    p_antes = p_agora
-
-
-    --------------------------------------------------
-    -- JOGO NÃO PAUSADO
-    --------------------------------------------------
-
-    if not pausado then
+    if estado == "inicio" then
 
 
         --------------------------------------------------
-        -- MOVIMENTO DA NAVE
-        --------------------------------------------------
-
-        if pico.get.key(pico.key.A) == 1 then
-
-            nave.x =
-                math.max(
-                    NAVE_MIN_X,
-                    nave.x - 1
-                )
-
-        end
-
-
-        if pico.get.key(pico.key.D) == 1 then
-
-            nave.x =
-                math.min(
-                    NAVE_MAX_X,
-                    nave.x + 1
-                )
-
-        end
-
-
-        --------------------------------------------------
-        -- DISPARO
+        -- Z
         --------------------------------------------------
 
         local z_agora =
             pico.get.key(pico.key.Z) == 1
 
 
+        --------------------------------------------------
+        -- Z FOI PRESSIONADO
+        --------------------------------------------------
+
         if z_agora
-        and not z_antes
-        and not tiro then
+        and not z_antes then
 
-            tiro = {
+            estado = "jogo"
 
-                x = nave.x,
 
-                y = nave.y - 1
+            --------------------------------------------------
+            -- Impede que o mesmo Z dispare imediatamente
+            --------------------------------------------------
 
-            }
+            z_antes = true
 
         end
 
 
-        z_antes = z_agora
+        --------------------------------------------------
+        -- GUARDA ESTADO DA TECLA
+        --------------------------------------------------
+
+        z_antes =
+            z_agora
 
 
         --------------------------------------------------
-        -- MOVIMENTO DO TIRO
+        -- DESENHA TELA INICIAL
         --------------------------------------------------
 
-        if tiro then
+        utils.tela_inicio(
+            pico
+        )
 
-            tiro.y =
-                tiro.y - 2
+
+    --------------------------------------------------
+    -- JOGO
+    --------------------------------------------------
+
+    elseif estado == "jogo" then
+
+
+        --------------------------------------------------
+        -- TECLA P
+        --------------------------------------------------
+
+        local p_agora =
+            pico.get.key(pico.key.P) == 1
+
+
+        if p_agora
+        and not p_antes then
+
+            pausado =
+                not pausado
+
+        end
+
+
+        p_antes =
+            p_agora
+
+
+        --------------------------------------------------
+        -- JOGO NÃO PAUSADO
+        --------------------------------------------------
+
+        if not pausado then
 
 
             --------------------------------------------------
-            -- TIRO SAIU DA TELA
+            -- MOVIMENTO DA NAVE
             --------------------------------------------------
 
-            if tiro.y < 0 then
+            if pico.get.key(pico.key.A) == 1 then
 
-                tiro = nil
+                nave.x =
+                    math.max(
+                        NAVE_MIN_X,
+                        nave.x - 1
+                    )
+
+            end
+
+
+            if pico.get.key(pico.key.D) == 1 then
+
+                nave.x =
+                    math.min(
+                        NAVE_MAX_X,
+                        nave.x + 1
+                    )
+
+            end
+
+
+            --------------------------------------------------
+            -- DISPARO
+            --------------------------------------------------
+
+            local z_agora =
+                pico.get.key(pico.key.Z) == 1
+
+
+            if z_agora
+            and not z_antes
+            and not tiro then
+
+                tiro = {
+
+                    x = nave.x,
+
+                    y = nave.y - 1
+
+                }
+
+            end
+
+
+            --------------------------------------------------
+            -- ESTADO DA TECLA Z
+            --------------------------------------------------
+
+            z_antes =
+                z_agora
+
+
+            --------------------------------------------------
+            -- MOVIMENTO DO TIRO
+            --------------------------------------------------
+
+            if tiro then
+
+                tiro.y =
+                    tiro.y - 2
+
+
+                --------------------------------------------------
+                -- TIRO SAIU DA TELA
+                --------------------------------------------------
+
+                if tiro.y < 0 then
+
+                    tiro = nil
+
+                end
+
+            end
+
+
+            --------------------------------------------------
+            -- MOVIMENTO DOS INIMIGOS
+            --------------------------------------------------
+
+            mover_inimigos()
+
+
+            --------------------------------------------------
+            -- COLISÃO DO TIRO
+            --------------------------------------------------
+
+            verificar_colisao()
+
+
+            --------------------------------------------------
+            -- VERIFICA VITÓRIA
+            --
+            -- É verificada depois da colisão do tiro.
+            --------------------------------------------------
+
+            if verificar_vitoria() then
+
+                estado = "vitoria"
+
+            else
+
+
+                --------------------------------------------------
+                -- VERIFICA DERROTA
+                --------------------------------------------------
+
+                if verificar_colisao_nave() then
+
+                    estado = "derrota"
+
+                end
 
             end
 
@@ -480,33 +716,44 @@ while true do
 
 
         --------------------------------------------------
-        -- MOVIMENTO DOS INIMIGOS
+        -- DESENHA O JOGO
         --------------------------------------------------
 
-        mover_inimigos()
+        utils.desenhar(
+            pico,
+            nave,
+            inimigos,
+            tiro,
+            pontos,
+            pausado
+        )
 
 
-        --------------------------------------------------
-        -- COLISÃO
-        --------------------------------------------------
+    --------------------------------------------------
+    -- VITÓRIA
+    --------------------------------------------------
 
-        verificar_colisao()
+    elseif estado == "vitoria" then
+
+
+        utils.vitoria(
+            pico
+        )
+
+
+    --------------------------------------------------
+    -- DERROTA
+    --------------------------------------------------
+
+    elseif estado == "derrota" then
+
+
+        utils.derrota(
+            pico,
+            pontos
+        )
 
     end
-
-
-    --------------------------------------------------
-    -- DESENHA A CENA
-    --------------------------------------------------
-
-    utils.desenhar(
-        pico,
-        nave,
-        inimigos,
-        tiro,
-        pontos,
-        pausado
-    )
 
 
     --------------------------------------------------
