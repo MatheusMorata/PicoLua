@@ -2,7 +2,7 @@ local utils = {}
 
 
 --------------------------------------------------
--- CONFIGURAÇÃO
+-- CONFIGURAÇÃO DOS INIMIGOS
 --------------------------------------------------
 
 local INIMIGO_LARGURA = 3
@@ -77,7 +77,7 @@ function utils.inimigos(
 
 
     --------------------------------------------------
-    -- DESENHA SOMENTE OS VIVOS
+    -- DESENHA SOMENTE OS INIMIGOS VIVOS
     --------------------------------------------------
 
     for _, enemy in ipairs(inimigos) do
@@ -143,6 +143,10 @@ function utils.nave(
     local cx = nave.x
     local cy = nave.y
 
+
+    --------------------------------------------------
+    -- PIXELS DA NAVE
+    --------------------------------------------------
 
     local pixels = {
 
@@ -378,14 +382,15 @@ function utils.pontuacao(
     })
 
 
-    pico.output.draw_text({
+    pico.output.draw_text(
 
-        x = 63,
+        {
+            x = 63,
+            y = 1
+        },
 
-        y = 1
-
-    },
         tostring(pontos)
+
     )
 
 
@@ -408,7 +413,9 @@ end
 -- PAUSE
 --------------------------------------------------
 
-function utils.pause(pico)
+function utils.pause(
+    pico
+)
 
     pico.set.anchor_draw({
 
@@ -433,17 +440,18 @@ function utils.pause(pico)
 
 
     --------------------------------------------------
-    -- CENTRO DA TELA
+    -- TEXTO NO CENTRO
     --------------------------------------------------
 
-    pico.output.draw_text({
+    pico.output.draw_text(
 
-        x = 32,
+        {
+            x = 32,
+            y = 24
+        },
 
-        y = 24
-
-    },
         "PAUSE"
+
     )
 
 

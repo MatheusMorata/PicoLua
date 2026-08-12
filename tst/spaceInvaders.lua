@@ -8,15 +8,35 @@ local utils = dofile("utils.lua")
 
 pico.init(true)
 
+-- Modo expert para controlar manualmente o desenho.
 pico.set.expert(true)
+
+
+--------------------------------------------------
+-- TAMANHO DA JANELA
+--------------------------------------------------
+
+-- Resolução lógica: 64 x 48
+-- Janela física: 640 x 480
+
+pico.set.size(
+    {
+        x = 640,
+        y = 480
+    },
+    {
+        x = 64,
+        y = 48
+    }
+)
 
 
 --------------------------------------------------
 -- FONTE
 --------------------------------------------------
 
--- O arquivo tiny.ttf deve estar no mesmo
--- diretório deste arquivo.
+-- tiny.ttf deve estar no mesmo diretório
+-- deste arquivo.
 
 pico.set.font("tiny.ttf", 12)
 
@@ -54,7 +74,7 @@ local p_antes = false
 
 
 --------------------------------------------------
--- TECLA Z
+-- ESTADO DA TECLA Z
 --------------------------------------------------
 
 local z_antes = false
@@ -107,7 +127,6 @@ end
 
 local inimigo_direcao = 1
 
-
 -- Quanto MAIOR o valor,
 -- mais LENTO o movimento.
 
@@ -122,7 +141,8 @@ local contador_inimigo = 0
 
 local function mover_inimigos()
 
-    contador_inimigo = contador_inimigo + 1
+    contador_inimigo =
+        contador_inimigo + 1
 
 
     --------------------------------------------------
@@ -190,7 +210,10 @@ local function mover_inimigos()
         for _, enemy in ipairs(inimigos) do
 
             if enemy.vivo then
-                enemy.y = enemy.y + 1
+
+                enemy.y =
+                    enemy.y + 1
+
             end
 
         end
@@ -214,7 +237,10 @@ local function mover_inimigos()
         for _, enemy in ipairs(inimigos) do
 
             if enemy.vivo then
-                enemy.y = enemy.y + 1
+
+                enemy.y =
+                    enemy.y + 1
+
             end
 
         end
@@ -315,10 +341,11 @@ local function verificar_colisao()
 
 
                 --------------------------------------------------
-                -- ADICIONA PONTOS
+                -- ADICIONA 10 PONTOS
                 --------------------------------------------------
 
-                pontos = pontos + 10
+                pontos =
+                    pontos + 10
 
 
                 return
@@ -363,7 +390,8 @@ while true do
 
     if p_agora and not p_antes then
 
-        pausado = not pausado
+        pausado =
+            not pausado
 
     end
 
@@ -384,20 +412,22 @@ while true do
 
         if pico.get.key(pico.key.A) == 1 then
 
-            nave.x = math.max(
-                NAVE_MIN_X,
-                nave.x - 1
-            )
+            nave.x =
+                math.max(
+                    NAVE_MIN_X,
+                    nave.x - 1
+                )
 
         end
 
 
         if pico.get.key(pico.key.D) == 1 then
 
-            nave.x = math.min(
-                NAVE_MAX_X,
-                nave.x + 1
-            )
+            nave.x =
+                math.min(
+                    NAVE_MAX_X,
+                    nave.x + 1
+                )
 
         end
 
@@ -434,8 +464,13 @@ while true do
 
         if tiro then
 
-            tiro.y = tiro.y - 2
+            tiro.y =
+                tiro.y - 2
 
+
+            --------------------------------------------------
+            -- TIRO SAIU DA TELA
+            --------------------------------------------------
 
             if tiro.y < 0 then
 
@@ -463,7 +498,7 @@ while true do
 
 
     --------------------------------------------------
-    -- DESENHA
+    -- DESENHA A CENA
     --------------------------------------------------
 
     utils.desenhar(
