@@ -22,10 +22,7 @@ function utils.tela_inicio(pico)
 
     pico.set.grid(false)
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 0,
@@ -49,10 +46,7 @@ function utils.tela_inicio(pico)
         a = 255
     })
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
     pico.set.grid(true)
 
@@ -60,10 +54,7 @@ end
 
 function utils.inimigos(pico, inimigos)
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 255,
@@ -87,19 +78,13 @@ function utils.inimigos(pico, inimigos)
         a = 255
     })
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 
 function utils.nave(pico, nave)
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 0,
@@ -148,19 +133,13 @@ function utils.nave(pico, nave)
         a = 255
     })
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 
 function utils.tiro(pico, tiro)
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 255,
@@ -183,19 +162,13 @@ function utils.tiro(pico, tiro)
         a = 255
     })
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 
 function utils.pontuacao(pico, pontos)
 
-    pico.set.anchor_draw({
-        x = PICO_RIGHT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("right top")
 
     pico.set.color_draw({
         r = 255,
@@ -212,19 +185,13 @@ function utils.pontuacao(pico, pontos)
         tostring(pontos)
     )
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 
 function utils.pause(pico)
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 255,
@@ -248,10 +215,7 @@ function utils.pause(pico)
         a = 255
     })
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 
@@ -259,10 +223,7 @@ function utils.game_over(pico, pontos)
 
     pico.output.clear()
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 255,
@@ -302,10 +263,7 @@ function utils.game_over(pico, pontos)
         texto_score
     )
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 
@@ -313,10 +271,7 @@ function utils.novo_recorde(pico, nome, posicao)
 
     pico.output.clear()
 
-    pico.set.anchor_draw({
-        x = PICO_LEFT,
-        y = PICO_TOP
-    })
+    pico.set.anchor_draw("left top")
 
     pico.set.color_draw({
         r = 255,
@@ -404,10 +359,7 @@ function utils.novo_recorde(pico, nome, posicao)
         "^"
     )
 
-    pico.set.anchor_draw({
-        x = PICO_CENTER,
-        y = PICO_MIDDLE
-    })
+    pico.set.anchor_draw("center")
 
 end
 

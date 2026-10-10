@@ -7,22 +7,11 @@ pico.set.size(
     { x = 80,  y = 60 }
 )
 
-pico.set.color_draw({
-    r = 0,
-    g = 255,
-    b = 0,
-    a = 255
-})
+pico.set.color_draw({ r = 0, g = 255, b = 0, a = 255 })
 
-pico.set.anchor_draw({
-    x = PICO_LEFT,
-    y = PICO_TOP
-})
+pico.set.anchor_draw("left top")
 
-local canto = pico.pos({
-    x = 0,
-    y = 0
-})
+local canto = pico.pos({ x = 0, y = 0 })
 
 pico.output.draw_rect({
     x = canto.x,
@@ -31,15 +20,9 @@ pico.output.draw_rect({
     h = 5
 })
 
-pico.set.anchor_draw({
-    x = PICO_CENTER,
-    y = PICO_MIDDLE
-})
+pico.set.anchor_draw("center")
 
-local centro = pico.pos({
-    x = 50,
-    y = 50
-})
+local centro = pico.pos({ x = 50, y = 50 })
 
 pico.output.draw_rect({
     x = centro.x,

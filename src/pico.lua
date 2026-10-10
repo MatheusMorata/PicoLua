@@ -92,6 +92,36 @@ local function PHY()
     }
 end
 
+-- ANCHOR PARSER
+-- Aceita string ou tabela {x=, y=}.
+-- String: 1 ou 2 palavras, em qualquer ordem, separadas por espaço, ',', '-' ou '_':
+--   horizontal: "left", "right"
+--   vertical:   "top"/"up", "bottom"/"down"
+--   neutro:     "center"/"middle"
+-- Palavras desconhecidas são ignoradas; se um eixo não for informado, fica no centro.
+local ANCHOR_H = { left = PICO_LEFT, right = PICO_RIGHT }
+local ANCHOR_V = { top = PICO_TOP, up = PICO_TOP, bottom = PICO_BOTTOM, down = PICO_BOTTOM }
+
+local function anchor(a)
+    if type(a) == "table" then
+        return a
+    end
+
+    local res = { x = PICO_CENTER, y = PICO_MIDDLE }
+
+    for word in tostring(a):lower():gmatch("[^%s,%-_]+") do
+        if ANCHOR_H[word] ~= nil then
+            res.x = ANCHOR_H[word]
+        elseif ANCHOR_V[word] ~= nil then
+            res.y = ANCHOR_V[word]
+        end
+    end
+
+    return res
+end
+
+pico.anchor = anchor
+
 local function hanchor(x, w)
     return x - (S.anchor.draw.x * w) / 100
 end
@@ -412,7 +442,7 @@ end
 function pico_pos_ext(pct, r, anc)
     local old = S.anchor.draw
 
-    S.anchor.draw = anc
+    S.anchor.draw = anchor(anc)
 
     local pt = {
         x = hanchor(r.x, r.w) + (pct.x * r.w) / 100,
@@ -430,12 +460,12 @@ function pico_rect_vs_rect_ext(r1, r2, a1, a2)
 
     local old = S.anchor.draw
 
-    S.anchor.draw = a1
+    S.anchor.draw = anchor(a1)
 
     local x1 = hanchor(r1.x, r1.w)
     local y1 = vanchor(r1.y, r1.h)
 
-    S.anchor.draw = a2
+    S.anchor.draw = anchor(a2)
 
     local x2 = hanchor(r2.x, r2.w)
     local y2 = vanchor(r2.y, r2.h)
@@ -630,12 +660,12 @@ function pico.get.key(key)
 end
 
 -- SETTERS
-function pico.set.anchor_draw(anchor)
-    S.anchor.draw = anchor
+function pico.set.anchor_draw(a)
+    S.anchor.draw = anchor(a)
 end
 
-function pico.set.anchor_rotate(anchor)
-    S.anchor.rotate = anchor
+function pico.set.anchor_rotate(a)
+    S.anchor.rotate = anchor(a)
 end
 
 function pico.set.color_clear(color)
@@ -774,24 +804,14 @@ function pico.output.draw_text_ext(pos, text, size)
         return
     end
 
-    assert(
-        S.font.ttf ~= nil,
-        "fonte não configurada"
-    )
-
     --------------------------------------------------
     -- RENDERIZA O TEXTO
     --------------------------------------------------
 
-    local surface, err = S.font.ttf:renderText(
+    local surface = S.font.ttf:renderText(
         text,
         "solid",
         S.color.draw
-    )
-
-    assert(
-        surface ~= nil,
-        err or "erro ao renderizar texto"
     )
 
     --------------------------------------------------
@@ -799,11 +819,6 @@ function pico.output.draw_text_ext(pos, text, size)
     --------------------------------------------------
 
     local tex = REN:createTextureFromSurface(surface)
-
-    assert(
-        tex ~= nil,
-        "erro ao criar textura do texto"
-    )
 
     --------------------------------------------------
     -- TAMANHO ORIGINAL DA FONTE
@@ -845,16 +860,6 @@ function pico.output.draw_text_ext(pos, text, size)
 
 end
 
-
-function pico.output.draw_text(pos, text)
-
-    pico.output.draw_text_ext(
-        pos,
-        text,
-        PICO_SIZE_KEEP
-    )
-
-end
 
 function pico.output.draw_text(pos, text)
     pico.output.draw_text_ext(pos, text, PICO_SIZE_KEEP)
