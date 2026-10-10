@@ -13,12 +13,8 @@ local pico = {
 }
 
 -- VAR
-PICO_LEFT =  0
-PICO_CENTER = 50
-PICO_RIGHT = 100
-PICO_TOP = 0
-PICO_MIDDLE = 50
-PICO_BOTTOM = 100
+local LEFT,   CENTER, RIGHT  = 0, 50, 100
+local TOP,    MIDDLE, BOTTOM = 0, 50, 100
 local WIN
 local REN
 PICO_TITLE = 'PicoLua'
@@ -94,20 +90,45 @@ end
 
 -- ANCHOR PARSER
 -- Aceita string ou tabela {x=, y=}.
+--
 -- String: 1 ou 2 palavras, em qualquer ordem, separadas por espaço, ',', '-' ou '_':
 --   horizontal: "left", "right"
 --   vertical:   "top"/"up", "bottom"/"down"
 --   neutro:     "center"/"middle"
 -- Palavras desconhecidas são ignoradas; se um eixo não for informado, fica no centro.
-local ANCHOR_H = { left = PICO_LEFT, right = PICO_RIGHT }
-local ANCHOR_V = { top = PICO_TOP, up = PICO_TOP, bottom = PICO_BOTTOM, down = PICO_BOTTOM }
+--
+-- Tabela: cada campo (x, y) pode ser uma palavra ou um número (percentual):
+--   {x = "left", y = "top"}
+--   {x = 0, y = 0}   (formato usado internamente por S.anchor)
+-- Campos ausentes ou inválidos ficam no centro.
+local ANCHOR_H = { left = LEFT, right = RIGHT }
+local ANCHOR_V = { top = TOP, up = TOP, bottom = BOTTOM, down = BOTTOM }
+
+-- Converte o valor de um eixo (número ou palavra) em percentual
+local function axis(v, map, default)
+    if type(v) == "number" then
+        return v
+    elseif type(v) == "string" then
+        local w = v:lower()
+        if map[w] ~= nil then
+            return map[w]
+        end
+        if w == "center" or w == "middle" then
+            return CENTER
+        end
+    end
+    return default
+end
 
 local function anchor(a)
     if type(a) == "table" then
-        return a
+        return {
+            x = axis(a.x, ANCHOR_H, CENTER),
+            y = axis(a.y, ANCHOR_V, MIDDLE),
+        }
     end
 
-    local res = { x = PICO_CENTER, y = PICO_MIDDLE }
+    local res = { x = CENTER, y = MIDDLE }
 
     for word in tostring(a):lower():gmatch("[^%s,%-_]+") do
         if ANCHOR_H[word] ~= nil then
@@ -147,8 +168,8 @@ local PICO_DIM_LOG = Pico_Dim(64, 48)
 
 S = {
     anchor = {
-        draw   = { x = PICO_CENTER, y = PICO_MIDDLE },
-        rotate = { x = PICO_CENTER, y = PICO_MIDDLE },
+        draw   = { x = CENTER, y = MIDDLE },
+        rotate = { x = CENTER, y = MIDDLE },
     },
 
     color = {
@@ -432,8 +453,8 @@ function pico.pos(pct)
             h = S.size.org.y
         },
         {
-            x = PICO_LEFT,
-            y = PICO_TOP
+            x = LEFT,
+            y = TOP
         }
     )
 end
