@@ -143,12 +143,13 @@ end
 
 pico.anchor = anchor
 
+-- CORREÇÃO: divisão inteira (//) para nunca gerar coordenadas fracionárias
 local function hanchor(x, w)
-    return x - (S.anchor.draw.x * w) / 100
+    return x - (S.anchor.draw.x * w) // 100
 end
 
 local function vanchor(y, h)
-    return y - (S.anchor.draw.y * h) / 100
+    return y - (S.anchor.draw.y * h) // 100
 end
 
 local function X(v, w)
@@ -301,15 +302,13 @@ function output_draw_tex(pos, tex, size)
 
     elseif size.x == 0 then
 
-        draw_w =
-            crp.w * (size.y / crp.h)
+        draw_w = (crp.w * size.y) // crp.h
 
         draw_h = size.y
 
     elseif size.y == 0 then
 
-        draw_h =
-            crp.h * (size.x / crp.w)
+        draw_h = (crp.h * size.x) // crp.w
 
         draw_w = size.x
 
@@ -321,11 +320,9 @@ function output_draw_tex(pos, tex, size)
     end
 
 
-    draw_w =
-        (S.scale.x * draw_w) / 100
+    draw_w = (S.scale.x * draw_w) // 100
 
-    draw_h =
-        (S.scale.y * draw_h) / 100
+    draw_h = (S.scale.y * draw_h) // 100
 
 
     local rct = {
@@ -342,11 +339,9 @@ function output_draw_tex(pos, tex, size)
 
     local rot = {
 
-        x =
-            (S.anchor.rotate.x * rct.w) / 100,
+        x = (S.anchor.rotate.x * rct.w) // 100,
 
-        y =
-            (S.anchor.rotate.y * rct.h) / 100
+        y = (S.anchor.rotate.y * rct.h) // 100
 
     }
 
@@ -412,8 +407,8 @@ function pico_dim_ext(pct, d)
     assert(pct.x >= 0 and pct.y >= 0, "negative dimensions")
 
     return {
-        x = (pct.x * d.x) / 100,
-        y = (pct.y * d.y) / 100
+        x = (pct.x * d.x) // 100,
+        y = (pct.y * d.y) // 100
     }
 end
 
@@ -466,8 +461,8 @@ function pico_pos_ext(pct, r, anc)
     S.anchor.draw = anchor(anc)
 
     local pt = {
-        x = hanchor(r.x, r.w) + (pct.x * r.w) / 100,
-        y = vanchor(r.y, r.h) + (pct.y * r.h) / 100
+        x = hanchor(r.x, r.w) + (pct.x * r.w) // 100,
+        y = vanchor(r.y, r.h) + (pct.y * r.h) // 100
     }
 
     S.anchor.draw = old
