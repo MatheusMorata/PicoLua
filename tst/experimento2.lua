@@ -1,36 +1,33 @@
 local pico = dofile("../src/pico.lua")
 
 pico.init(true)
+pico.set.size({ x = 800, y = 600 }, { x = 320, y = 240 })
+pico.set.grid(false)
+pico.set.font("tiny.ttf", 8)
 
-pico.set.size(
-    { x = 800, y = 600 },
-    { x = 80,  y = 60 }
-)
+-- fundo: âncora bottom/right
+pico.set.anchor_draw{ x = "right", y = "bottom" }
+pico.set.style("PICO_FILL")
+pico.set.color_draw{ r = 240, g = 238, b = 252, a = 255 }
+pico.output.draw_rect{ x = 296, y = 216, w = 170, h = 80 }
 
-pico.set.color_draw({ r = 0, g = 255, b = 0, a = 255 })
+-- borda
+pico.set.style("PICO_STROKE")
+pico.set.color_draw{ r = 70, g = 60, b = 170, a = 255 }
+pico.output.draw_rect{ x = 296, y = 216, w = 170, h = 80 }
 
-pico.set.anchor_draw("left top")
+-- título: âncora center/top
+pico.set.anchor_draw{ x = "center", y = "top" }
+pico.output.draw_text({ x = 211, y = 144 }, "Atualizacao")
 
-local canto = pico.pos({ x = 0, y = 0 })
+-- botões: âncora center/middle
+pico.set.anchor_draw{ x = "center", y = "middle" }
+pico.set.style("PICO_FILL")
+pico.output.draw_rect{ x = 183, y = 192, w = 44, h = 16 }
+pico.output.draw_rect{ x = 240, y = 192, w = 44, h = 16 }
 
-pico.output.draw_rect({
-    x = canto.x,
-    y = canto.y,
-    w = 10,
-    h = 5
-})
+pico.set.color_draw{ r = 255, g = 255, b = 255, a = 255 }
+pico.output.draw_text({ x = 183, y = 192 }, "Depois")
+pico.output.draw_text({ x = 240, y = 192 }, "OK")
 
-pico.set.anchor_draw("center")
-
-local centro = pico.pos({ x = 50, y = 50 })
-
-pico.output.draw_rect({
-    x = centro.x,
-    y = centro.y,
-    w = 4,
-    h = 4
-})
-
-while true do
-    pico.input.delay(16)
-end
+while true do pico.input.delay(100) end
