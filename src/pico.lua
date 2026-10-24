@@ -1,10 +1,8 @@
--- IMPORTS
 local SDL   = require "SDL"
 local TTF   = require "SDL.ttf"
 local IMG   = require "SDL.image"
 local MIXER = require "SDL.mixer"
 
--- MODULES
 local pico = {
     set   = {},
     get   = {},
@@ -12,7 +10,6 @@ local pico = {
     output = {},
 }
 
--- VAR
 local LEFT,   CENTER, RIGHT  = 0, 50, 100
 local TOP,    MIDDLE, BOTTOM = 0, 50, 100
 local WIN
@@ -27,7 +24,6 @@ end
 
 
 pico.key = {
-    -- Letras
     A = scancode("A"), B = scancode("B"), C = scancode("C"), D = scancode("D"),
     E = scancode("E"), F = scancode("F"), G = scancode("G"), H = scancode("H"),
     I = scancode("I"), J = scancode("J"), K = scancode("K"), L = scancode("L"),
@@ -36,43 +32,35 @@ pico.key = {
     U = scancode("U"), V = scancode("V"), W = scancode("W"), X = scancode("X"),
     Y = scancode("Y"), Z = scancode("Z"),
 
-    -- Números (linha superior do teclado)
-    -- obs: não dá pra usar pico.key.0 direto em Lua, por isso NumX
     Num0 = scancode("0"), Num1 = scancode("1"), Num2 = scancode("2"),
     Num3 = scancode("3"), Num4 = scancode("4"), Num5 = scancode("5"),
     Num6 = scancode("6"), Num7 = scancode("7"), Num8 = scancode("8"),
     Num9 = scancode("9"),
 
-    -- Setas
     Left  = scancode("Left"),
     Right = scancode("Right"),
     Up    = scancode("Up"),
     Down  = scancode("Down"),
 
-    -- Modificadores
     LCtrl  = scancode("LCtrl"),  RCtrl  = scancode("RCtrl"),
     LShift = scancode("LShift"), RShift = scancode("RShift"),
     LAlt   = scancode("LAlt"),   RAlt   = scancode("RAlt"),
 
-    -- Controle geral
     Space     = scancode("Space"),
     Return    = scancode("Return"),
     Escape    = scancode("Escape"),
     Tab       = scancode("Tab"),
     Backspace = scancode("Backspace"),
 
-    -- Sinais
     Minus  = scancode("Minus"),
     Equals = scancode("Equals"),
 
-    -- Teclas de função
     F1 = scancode("F1"), F2 = scancode("F2"), F3 = scancode("F3"),
     F4 = scancode("F4"), F5 = scancode("F5"), F6 = scancode("F6"),
     F7 = scancode("F7"), F8 = scancode("F8"), F9 = scancode("F9"),
     F10 = scancode("F10"), F11 = scancode("F11"), F12 = scancode("F12"),
 }
 
--- TYPES
 local function Pico_Dim(x, y)
     return {
         x = x,
@@ -88,23 +76,9 @@ local function PHY()
     }
 end
 
--- ANCHOR PARSER
--- Aceita string ou tabela {x=, y=}.
---
--- String: 1 ou 2 palavras, em qualquer ordem, separadas por espaço, ',', '-' ou '_':
---   horizontal: "left", "right"
---   vertical:   "top"/"up", "bottom"/"down"
---   neutro:     "center"/"middle"
--- Palavras desconhecidas são ignoradas; se um eixo não for informado, fica no centro.
---
--- Tabela: cada campo (x, y) pode ser uma palavra ou um número (percentual):
---   {x = "left", y = "top"}
---   {x = 0, y = 0}   (formato usado internamente por S.anchor)
--- Campos ausentes ou inválidos ficam no centro.
 local ANCHOR_H = { left = LEFT, right = RIGHT }
 local ANCHOR_V = { top = TOP, up = TOP, bottom = BOTTOM, down = BOTTOM }
 
--- Converte o valor de um eixo (número ou palavra) em percentual
 local function axis(v, map, default)
     if type(v) == "number" then
         return v
@@ -143,7 +117,6 @@ end
 
 pico.anchor = anchor
 
--- CORREÇÃO: divisão inteira (//) para nunca gerar coordenadas fracionárias
 local function hanchor(x, w)
     return x - (S.anchor.draw.x * w) // 100
 end
@@ -229,7 +202,6 @@ S = {
     },
 }
 
--- SHOW GRID
 local function show_grid()
     if not S.grid then return end
 
@@ -258,7 +230,6 @@ local function show_grid()
     REN:setDrawColor(S.color.draw)
 end
 
--- LOCAL OUTPUT
 local function output_present(force)
     if S.expert and not force then return end
 
@@ -395,14 +366,12 @@ local function output_clear()
 end
 
 
--- SET GRID
 function pico.set.grid(on)
     S.grid = on
     output_present(true)
 end
 
 
--- UTILS
 function pico_dim_ext(pct, d)
     assert(pct.x >= 0 and pct.y >= 0, "negative dimensions")
 
@@ -507,7 +476,6 @@ function pico_rect_vs_rect(r1, r2)
 
 end
 
--- LOCAL FUNCTION
 local function event_from_sdl(e, xp)
 
     if e.type == SDL.event.Quit then
@@ -589,10 +557,7 @@ local function event_from_sdl(e, xp)
     ::check_event::
 
 
-    -- EVENT TYPE CHECK
-
     if xp == e.type then
-        -- OK
 
     elseif xp == SDL.ANY then
 
@@ -611,8 +576,6 @@ local function event_from_sdl(e, xp)
     end
 
 
-    -- SDL -> LOGICAL POSITION
-
     if e.type == SDL.event.MouseButtonDown or
        e.type == SDL.event.MouseButtonUp or
        e.type == SDL.event.MouseMotion then
@@ -626,9 +589,7 @@ end
 
 local function set_size(phy, log)
 
-    -- Physical
     if phy.x == PICO_SIZE_KEEP.x and phy.y == PICO_SIZE_KEEP.y then
-        -- keep
 
     elseif phy.x == PICO_SIZE_FULLSCREEN.x and phy.y == PICO_SIZE_FULLSCREEN.y then
         WIN:setFullscreen(SDL.window.Fullscreen)
@@ -639,7 +600,6 @@ local function set_size(phy, log)
         WIN:setSize(phy.x, phy.y)
     end
 
-    -- Logical
     if not (log.x == PICO_SIZE_KEEP.x and log.y == PICO_SIZE_KEEP.y) then
         S.size.cur = log
 
@@ -665,7 +625,6 @@ local function set_size(phy, log)
     output_present(false)
 end
 
--- GETTERS
 function pico.get.ticks()
     return SDL.getTicks()
 end
@@ -675,7 +634,6 @@ function pico.get.key(key)
     return state[key] and 1 or 0
 end
 
--- SETTERS
 function pico.set.anchor_draw(a)
     S.anchor.draw = anchor(a)
 end
@@ -783,7 +741,6 @@ function pico.set.zoom(zoom)
 end
 
 
--- INPUT
 function pico.input.event_ask(evt, type)
     local has = SDL.pollEvent(evt)
     if not has then
@@ -813,16 +770,11 @@ function pico.input.delay(ms)
 end
 
 
--- OUTPUT
 function pico.output.draw_text_ext(pos, text, size)
 
     if text == nil or text == "" then
         return
     end
-
-    --------------------------------------------------
-    -- RENDERIZA O TEXTO
-    --------------------------------------------------
 
     local surface = S.font.ttf:renderText(
         text,
@@ -830,21 +782,10 @@ function pico.output.draw_text_ext(pos, text, size)
         S.color.draw
     )
 
-    --------------------------------------------------
-    -- CRIA A TEXTURA
-    --------------------------------------------------
-
     local tex = REN:createTextureFromSurface(surface)
-
-    --------------------------------------------------
-    -- TAMANHO ORIGINAL DA FONTE
-    --------------------------------------------------
+    tex:setBlendMode(SDL.blendMode.Blend)
 
     local _, _, w, h = tex:query()
-
-    --------------------------------------------------
-    -- DESENHA A TEXTURA
-    --------------------------------------------------
 
     if size.x == 0 and size.y == 0 then
 
@@ -866,10 +807,6 @@ function pico.output.draw_text_ext(pos, text, size)
         )
 
     end
-
-    --------------------------------------------------
-    -- LIBERA
-    --------------------------------------------------
 
     tex = nil
     surface = nil
@@ -911,6 +848,7 @@ function pico.output.draw_tri(rect)
         rect.w,
         rect.h
     )
+    aux:setBlendMode(SDL.blendMode.Blend)
 
 
     REN:setDrawBlendMode(SDL.blendMode.Blend)
@@ -996,6 +934,7 @@ function pico.output.draw_rect(rect)
     }
 
     local aux = REN:createTexture(SDL.pixelFormat.RGBA8888, SDL.textureAccess.Target, rect.w, rect.h)
+    aux:setBlendMode(SDL.blendMode.Blend)
 
     REN:setDrawBlendMode(SDL.blendMode.Blend)
 
@@ -1021,7 +960,7 @@ function pico.output.draw_rect(rect)
         REN:fillRect(rect)
 
     elseif S.style == 'PICO_STROKE' then
-        REN:drawRect(rect)
+        REN:drawRect({ x = 0, y = 0, w = rect.w - 1, h = rect.h - 1 })
     end
 
     REN:setTarget(TEX)
@@ -1036,7 +975,6 @@ function pico.output.clear()
     output_present(false)
 end
 
--- INIT
 function pico.init(on)
     if on then
         WIN = SDL.createWindow{
