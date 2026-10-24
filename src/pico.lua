@@ -953,14 +953,18 @@ function pico.output.draw_rect(rect)
 
     S.color.clear = clr
 
-    rect.x = 0
-    rect.y = 0
+    local area = {
+        x = 0,
+        y = 0,
+        w = rect.w,
+        h = rect.h
+    }
 
     if S.style == 'PICO_FILL' then
-        REN:fillRect(rect)
+        REN:fillRect(area)
 
     elseif S.style == 'PICO_STROKE' then
-        REN:drawRect({ x = 0, y = 0, w = rect.w - 1, h = rect.h - 1 })
+        REN:drawRect(area)
     end
 
     REN:setTarget(TEX)

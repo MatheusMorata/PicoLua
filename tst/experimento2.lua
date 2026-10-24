@@ -2,7 +2,7 @@ local pico = dofile("../src/pico.lua")
 
 local roxo   = { r = 70,  g = 60,  b = 170, a = 255 }
 local branco = { r = 255, g = 255, b = 255, a = 255 }
-local fundo  = { r = 240, g = 238, b = 252, a = 255 }
+local fundo  = { r = 0,   g = 0,   b = 0,   a = 255 }
 
 pico.init(true)
 pico.set.title("Experimento 2")
