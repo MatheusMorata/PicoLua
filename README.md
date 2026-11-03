@@ -5,6 +5,6 @@ Uma camada de abstração que transforma a biblioteca lua-sdl2 em uma API simple
 ## Instalação
 
 ```
-sudo apt install lua5.1 libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev luarocks
+sudo apt install lua5.4 liblua5.4-dev libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev luarocks
 sudo luarocks install lua-sdl2
 ```
