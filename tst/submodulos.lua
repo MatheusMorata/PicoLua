@@ -1,4 +1,4 @@
-local pico = require 'pico'
+local pico = dofile("../src/pico.lua")
 local quadrado = {}
 local linha = {}
 
