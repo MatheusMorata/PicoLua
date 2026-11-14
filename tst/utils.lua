@@ -22,14 +22,14 @@ function utils.tela_inicio(pico)
 
     pico.set.grid(false)
 
-    pico.set.anchor_draw("left top")
+    pico.set.anchor_draw{ x = 'LEFT', y = 'TOP' }
 
-    pico.set.color_draw({
+    pico.set.color_draw{
         r = 0,
         g = 255,
         b = 0,
         a = 255
-    })
+    }
 
     pico.output.draw_text(
         {
@@ -39,14 +39,14 @@ function utils.tela_inicio(pico)
         "SPACE INVADERS"
     )
 
-    pico.set.color_draw({
+    pico.set.color_draw{
         r = 255,
         g = 255,
         b = 255,
         a = 255
-    })
+    }
 
-    pico.set.anchor_draw("center")
+    pico.set.anchor_draw{ x = 'CENTER', y = 'MIDDLE' }
 
     pico.set.grid(true)
 
